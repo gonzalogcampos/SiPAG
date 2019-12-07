@@ -2,5 +2,6 @@
 //Copyright (c) 2019 Gonzalo G Campos
 
 #pragma once
+#include <string>
 
-void print(char* text, int priority = 1);
+void print(std::string text, int priority = 1);

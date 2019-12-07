@@ -1,0 +1,6 @@
+@ECHO OFF
+@ECHO Compilando...
+ECHO g++ src/*.cpp -c -Isrc/.
+@ECHO Linkando...
+ECHO g++ *.o -o Test.exe
+PAUSE
