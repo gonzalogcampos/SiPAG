@@ -10,6 +10,9 @@ class Simulation
         ~Simulation(){}
 
         void run();
+        void start();
+        void close();
+        void pause();
 
     private:
         GUI gui;

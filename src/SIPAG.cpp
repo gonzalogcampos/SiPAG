@@ -6,6 +6,6 @@
 
 int main(){
     Simulation* s = new Simulation();
-    s->run();
+    s->start();
     return 0;
 }
