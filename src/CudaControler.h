@@ -1,2 +1,6 @@
-//#include <cuda_runtime.h>
-
+#pragma once
+class CudaControler
+{
+    public:
+        static void doSomething();
+};

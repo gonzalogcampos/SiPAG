@@ -1,9 +1,16 @@
 #include <Simulation.h>
 #include <Console.h>
+#include <CudaControler.h>
 
 void Simulation::run()
 {
     print("Run\n", 1);
+    CudaControler::doSomething();
+    int i = 0;
+    while(true)
+    {
+        i++;
+    }
 }
 
 void Simulation::start()
