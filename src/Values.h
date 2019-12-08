@@ -3,5 +3,5 @@ namespace values
 {
     const bool run = false;
 
-    const int print_priority = 2;
+    const int print_priority = 1 ;
 }

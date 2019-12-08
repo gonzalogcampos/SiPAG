@@ -7,7 +7,7 @@
 
 void cPrint(std::string text, int priority)
 {
-    if(priority>=values::print_priority)
+    if(priority<=values::print_priority)
     {
         std::cout<<text;
     }
