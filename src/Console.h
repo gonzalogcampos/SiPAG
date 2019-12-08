@@ -4,4 +4,4 @@
 #pragma once
 #include <string>
 
-void print(std::string text, int priority = 1);
+void cPrint(std::string text, int priority = 1);

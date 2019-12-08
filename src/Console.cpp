@@ -5,7 +5,7 @@
 #include <iostream>
 #include <Values.h>
 
-void print(std::string text, int priority)
+void cPrint(std::string text, int priority)
 {
     if(priority>=values::print_priority)
     {

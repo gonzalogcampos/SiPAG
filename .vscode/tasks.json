@@ -2,57 +2,30 @@
     // See https://go.microsoft.com/fwlink/?LinkId=733558
     // for the documentation about the tasks.json format
     "version": "2.0.0",
+    "echoCommand": true,
     "tasks": [
         {
             "label": "build",
-            "type": "shell",
-            "command": "msbuild",
-            "args": [
-                "/property:GenerateFullPaths=true",
-                "/t:build",
-                "/consoleloggerparameters:NoSummary"
-            ],
-            "group": "build",
-            "presentation": {
-                "reveal": "silent"
+            "command": "nvcc",
+            "args": ["-o", "bin/SIPAG.exe",
+                "-Isrc/.",
+                "src/CudaControler.cu",
+                "-x", "cu",
+                "src/SIPAG.cpp", "src/Console.cpp", "src/Simulation.cpp"],
+            "group": {
+                "kind": "build",
+                "isDefault": true
             },
-            "problemMatcher": "$msCompile"
+            "problemMatcher": []
         },
         {
-            "type": "shell",
-            "label": "cpp.exe build active file",
-            "command": "C:\\MinGW\\bin\\cpp.exe",
-            "args": [
-                "-g",
-                "*.cpp",
-                "-o",
-                "${fileDirname}\\${fileBasenameNoExtension}.exe"
-            ],
-            "options": {
-                "cwd": "C:\\MinGW\\bin"
+            "label": "run",
+            "command": "./bin/SIPAG.exe",
+            "group": {
+                "kind": "build",
+                "isDefault": true
             },
-            "problemMatcher": [
-                "$gcc"
-            ],
-            "group": "build"
-        },
-        {
-            "type": "shell",
-            "label": "g++.exe build active file",
-            "command": "C:\\MinGW\\bin\\g++.exe",
-            "args": [
-                "-g",
-                "${file}",
-                "-o",
-                "${fileDirname}\\${fileBasenameNoExtension}.exe"
-            ],
-            "options": {
-                "cwd": "C:\\MinGW\\bin"
-            },
-            "problemMatcher": [
-                "$gcc"
-            ],
-            "group": "build"
+            "problemMatcher": []
         }
     ]
 }
