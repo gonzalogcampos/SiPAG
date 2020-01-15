@@ -3,12 +3,13 @@
 
 #include <Console.h>
 #include <iostream>
-//#include <Values.h>
+
+const int print_priority = 1;
 
 void cPrint(std::string text, int priority)
 {
-    //if(priority<=values::print_priority)
-    //{
+    if(priority<=print_priority)
+    {
         std::cout<<text;
-    //}
+    }
 }

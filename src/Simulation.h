@@ -4,6 +4,7 @@
 #include <GUI.h>
 #pragma once
 class CudaControler;
+//class Clock;
 class Simulation 
 {
     public:
@@ -18,4 +19,5 @@ class Simulation
     private:
         GUI gui;
         CudaControler* cudaControler;
+        //Clock* clock;
 };

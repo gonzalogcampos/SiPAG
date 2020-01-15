@@ -8,9 +8,7 @@ class CudaControler
     private:
         void showDevices();
 
-	    float *h_x;	//position x
-	    float *h_y;	//position y
-	    float *h_z;  //position z
+		float *h_lr; //life remaingin
 
         float *d_x;	//position x
 	    float *d_y;	//position y

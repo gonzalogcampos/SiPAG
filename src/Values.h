@@ -8,22 +8,25 @@ namespace values
 
     const int cu_BlockSize = 1024;
 
+    const int sys_FPS = 60;
+
 
     /*
     *
     * -------- EMITTER --------
     * 
     */
-   float e_Radious = 1.f;
-   unsigned int e_ParticlesSecond = 2;
-   unsigned int e_MaxParticles = 300;
+   float e_Radious = 1.f;                   //Emitter radious
+   unsigned int e_ParticlesSecond = 2;      //Not used
+   unsigned int e_EmissionFrec = 1000;        //In 1/1000
+   unsigned int e_MaxParticles = 50000;      //Max Particles
 
     /*
     *
     * -------- PARTICLE --------
     * 
     */
-   float p_LifeTime = 5.f;            //Life of the particle in seconds
+   float p_LifeTime = 10.f;            //Life of the particle in seconds
    float p_RLifeTime = 0.2f;         //% of random in life
    float p_Size = 1.f;                //Size of the particle
    float p_SizeEvolution = .05f;      //%per second size improves

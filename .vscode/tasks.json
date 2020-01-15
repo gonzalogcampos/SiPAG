@@ -4,15 +4,30 @@
     "version": "2.0.0",
     "echoCommand": true,
     "tasks": [
-        {
+        { 
             "label": "build",
             "command": "nvcc",
-            "args": ["-o", "bin/SIPAG.exe",
+            "args": ["--gpu-architecture=sm_50",
+                "-o", "bin/SIPAG.exe",
+                
                 "-Isrc/.",
                 "src/CudaControler.cu",
                 "-x", "cu",
-                "src/SIPAG.cpp", "src/Console.cpp", "src/Simulation.cpp"],
-            "group": {
+                "src/SIPAG.cpp", "src/Console.cpp", "src/Render.cpp", "src/Simulation.cpp",
+                "-Iinclude/",
+                //"-lkernel32", 
+                //"-lgdi32",  
+                //"-luser32", 
+                "-Llib/GL", 
+                "-lglew32", 
+                //"-lglfw3", 
+                "-lfreeglut" , 
+                "-lglu32", 
+                "-lopengl32"
+                //"-lntdll",
+                //"-lshell32"
+            ],
+                "group": {
                 "kind": "build",
                 "isDefault": true
             },

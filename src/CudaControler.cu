@@ -16,13 +16,6 @@
 #include <Console.h>
 #include <Values.h>
 
-//Funciones para el timestamp
-typedef LARGE_INTEGER timeStamp;
-void getCurrentTimeStamp(timeStamp& _time);
-timeStamp getCurrentTimeStamp();
-double getTimeMili(const timeStamp& start, const timeStamp& end);
-double getTimeSecs(const timeStamp& start, const timeStamp& end);
-
 
 __global__ void setup_kernel ( curandState * state, unsigned long seed, unsigned int maxParticles)
 {
@@ -32,12 +25,15 @@ __global__ void setup_kernel ( curandState * state, unsigned long seed, unsigned
 } 
 
 // CUDA kernel. Each thread takes care of one element of c
-__global__ void vecAdd(float *x, float *y, float *z,
+__global__ void kernel(float *x, float *y, float *z,
 							float *vx, float *vy, float *vz,
-							float *lt, float *lr,
+							float *lt, float *lr, 
+							float rLife, 
+							float life,
 							curandState* state,
 							float dt,
-							unsigned int maxParticles,
+							unsigned int maxParticles, 
+							unsigned int emitterFrec,
 							float vDecay)
 {
 
@@ -49,20 +45,21 @@ __global__ void vecAdd(float *x, float *y, float *z,
 		if(lr[id]<0.f)
 		{
 			//Space to create a particle
-			int r = curand(&state[id]);
+			int r = curand(&state[id])%1000;
+			if(r<emitterFrec)
+			{
+				r=curand(&state[id])%100;
+				x[id] = 0.f;
+				y[id] = 0.f;
+				z[id] = 0.f;
 
-			x[id] = 0.f;
-			y[id] = 0.f;
-			z[id] = 0.f;
+				vx[id] = 1.f;
+				vy[id] = 1.f;
+				vz[id] = 1.f;
 
-			vx[id] = 1.f;
-			vy[id] = 1.f;
-			vz[id] = 1.f;
-
-			lt[id] = 0.f;
-			lr[id] = 5.f;
-
-
+				lt[id] = 0.f;
+				lr[id] = life -life*rLife + 2*life*rLife*r/100;
+			}
 		}else
 		{
 			//Velocity Decay
@@ -130,9 +127,7 @@ void CudaControler::setKernel()
 	size_t bytes = values::e_MaxParticles*sizeof(float);
 
 	//Allocate memory for each vector in host
-	h_x = (float*)malloc(bytes);	//position x
-	h_y = (float*)malloc(bytes);	//position y
-	h_z = (float*)malloc(bytes);  //position z
+	h_lr = (float*)malloc(bytes);
 	
 	//Allocate memory for each vector in device
 	cudaMalloc(&d_x, bytes);
@@ -147,14 +142,11 @@ void CudaControler::setKernel()
 	cudaMalloc(&d_lr, bytes);
 
 	// Initialize vectors on host
-	/*
-	memset(h_x, -1.f, h_x.size);
-	memset(h_y, -1.f, h_y.size);
-	memset(h_z, -1.f, h_z.size);
-	*/
+	for (size_t i = 0; i< sizeof(h_lr)/sizeof(*h_lr); i++)
+		h_lr[i] = -1.f;
 
 	// Copy host vectors to device
-	cudaMemcpy( d_lr, h_z, bytes, cudaMemcpyHostToDevice);
+	cudaMemcpy( d_lr, h_lr, bytes, cudaMemcpyHostToDevice);
 
 	// Number of threads in each block
 	blockSize = values::cu_BlockSize;
@@ -176,9 +168,7 @@ void CudaControler::closeKernel()
 		cudaFree(d_lr);
 
 		// Release host memory
-		free(h_x);
-		free(h_y);
-		free(h_z);
+		free(h_lr);
 }
 
 void CudaControler::step(float dt)
@@ -189,24 +179,27 @@ void CudaControler::step(float dt)
 	cudaMalloc ( &devStates, values::e_MaxParticles*sizeof( curandState ) );
 	setup_kernel<<<gridSize, blockSize>>> ( devStates, rand()%10000, values::e_MaxParticles);
 
-	vecAdd<<<gridSize, blockSize>>>(d_x, d_y, d_z, 
+	kernel<<<gridSize, blockSize>>>(d_x, d_y, d_z, 
 										d_vx, d_vy, d_vz,
-										d_lt, d_lr,
+										d_lt, d_lr, values::p_RLifeTime, values::p_LifeTime,
 										devStates,
 										dt,
 										values::e_MaxParticles,
+										values::e_EmissionFrec,
 										values::p_VelocityDecay);
 	
 	cudaFree(devStates);
 
 	// Copy array back to host
 	size_t bytes = values::e_MaxParticles*sizeof(float);
-	cudaMemcpy( h_x, d_x, bytes, cudaMemcpyDeviceToHost );
-	cudaMemcpy( h_y, d_y, bytes, cudaMemcpyDeviceToHost );
-	cudaMemcpy( h_z, d_z, bytes, cudaMemcpyDeviceToHost );
-
+	cudaMemcpy( h_lr, d_lr, bytes, cudaMemcpyDeviceToHost );
+	int p = 0;
 	for(int i = 0; i<values::e_MaxParticles; i++)
 	{
-		printf("P_%i---> x: %f, y: %f, z: %f \n", i, h_x[i], h_y[i], h_z[i]);
+		if(h_lr[i]>=0)
+		{
+			p++;
+		}
 	}
+	printf("Particulas: %i\n", p);
 }
