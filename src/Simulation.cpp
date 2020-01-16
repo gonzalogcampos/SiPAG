@@ -1,43 +1,59 @@
 #include <Simulation.h>
 #include <Console.h>
 #include <CudaControler.h>
-//#include <Clock.h>
-Simulation::Simulation()
-{
-    cudaControler = new CudaControler();
-    //clock = new Clock();
-}
-Simulation::~Simulation()
-{
-    delete cudaControler;
-    //delete clock;
-}
-void Simulation::run()
-{
-    int i = 0;
-    while(true/*clock->canContinue()*/)
-    {
-        cudaControler->step(/*clock->getElapsedTime()*/true);
-        i++;
-        if(i>100)
-            return;
-    }
-}
+#include <Render.h>
+#include <GL/glut.h>
 
-void Simulation::start()
+CudaControler *cudaControler;
+Render *render;
+
+int window;
+
+
+void start(int argv, char **argc)
 {
     cPrint("Start\n", 1);
-    //clock->start();
+
+    cudaControler = new CudaControler();
+    render = new Render();
+
+	glutInit(&argv, argc);
+	glutInitWindowSize(720, 720);
+    glutInitDisplayMode(GLUT_RGB | GLUT_STENCIL | GLUT_DOUBLE | GLUT_DEPTH);
+
+  	window = glutCreateWindow("SiPAG");
+    
+
     cudaControler->setKernel();
+    render->start();
+
+    glutDisplayFunc(step);
+
+
+    glutMainLoop();
 }
 
-void Simulation::close()
+void step(void)
+{
+    cPrint("Step\n", 1);
+
+
+    cudaControler->step(true);
+    render->draw();
+
+    glutSwapBuffers();
+    glutPostRedisplay();
+}
+
+void close(void)
 {
     cPrint("Close\n", 1);
-    cudaControler->closeKernel();
-}
 
-void Simulation::pause()
-{
-    cPrint("Stop\n", 1);
+    cudaControler->closeKernel();
+    render->close();
+
+    delete cudaControler;
+    delete render;
+
+    glutDestroyWindow(window);
 }

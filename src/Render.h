@@ -1,15 +1,13 @@
 #pragma once
 
-
 class Render
 {
     public:
-        Render();
-        ~Render();
+        Render(){}
+        ~Render(){}
 
         void start();
         void draw();
         void close();
     private:
-        int window;
 };
