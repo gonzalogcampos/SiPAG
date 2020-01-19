@@ -1,11 +1,24 @@
 #pragma once
+
 class CudaControler
 {
     public:
+
+        static CudaControler* getInstance(){
+            static CudaControler only_instance;
+            return &only_instance;
+        }
+
         void step(float dt);
         void setKernel();
         void closeKernel();
+        int testDevices();
+        
     private:
+
+        CudaControler(){}
+        ~CudaControler(){}
+
         void showDevices();
 
 		float *h_lr; //life remaingin

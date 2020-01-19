@@ -2,13 +2,15 @@
 //Copyright (c) 2019 Gonzalo G Campos
 
 #include <Console.h>
+
 #include <iostream>
 
-const int print_priority = 1;
+#include <Values.h>
+
 
 void cPrint(std::string text, int priority)
 {
-    if(priority<=print_priority)
+    if(priority<=values::print_priority)
     {
         std::cout<<text;
     }

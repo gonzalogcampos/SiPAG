@@ -1,6 +1,6 @@
 
 
-void start(int argv, char **argc);
+int start(int argv, char **argc);
 
 void step(void);
 

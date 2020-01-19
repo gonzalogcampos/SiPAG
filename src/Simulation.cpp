@@ -7,35 +7,45 @@
 CudaControler *cudaControler;
 Render *render;
 
-int window;
+int window, subwindow;
 
 
-void start(int argv, char **argc)
+int start(int argv, char **argc)
 {
-    cPrint("Start\n", 1);
+    cPrint("Start\n", 2);
+    cPrint("SiPAG | Cuda & OpenGL Particle simulatior\nBuilt version:1.0 2020\nMIT License Copyright (c) Gonzalo G. Campos 2020\n",1);
 
-    cudaControler = new CudaControler();
-    render = new Render();
+
+    cudaControler = CudaControler::getInstance();
+    render = Render::getInstance();
+
+    if(cudaControler->testDevices()!=0)
+    {
+        return 1;
+    }
 
 	glutInit(&argv, argc);
 	glutInitWindowSize(720, 720);
     glutInitDisplayMode(GLUT_RGB | GLUT_STENCIL | GLUT_DOUBLE | GLUT_DEPTH);
 
-  	window = glutCreateWindow("SiPAG");
+  	window = glutCreateWindow("SiPAG | ");
     
-
     cudaControler->setKernel();
+    cPrint("Kernel seted\n", 3);
     render->start();
+    cPrint("Started render\n", 3);
 
     glutDisplayFunc(step);
 
 
     glutMainLoop();
+
+    return 0;
 }
 
 void step(void)
 {
-    cPrint("Step\n", 1);
+    cPrint("Step\n", 3);
 
 
     cudaControler->step(true);
@@ -47,13 +57,10 @@ void step(void)
 
 void close(void)
 {
-    cPrint("Close\n", 1);
+    cPrint("Close\n", 3);
 
     cudaControler->closeKernel();
     render->close();
-
-    delete cudaControler;
-    delete render;
 
     glutDestroyWindow(window);
 }

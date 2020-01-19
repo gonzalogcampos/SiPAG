@@ -3,4 +3,5 @@
 
 #pragma once
 #include <string>
+
 void cPrint(std::string text, int priority = 1);

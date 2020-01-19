@@ -13,8 +13,9 @@
 #include <curand_kernel.h>
 
 #include <CudaControler.h>
-#include <Console.h>
 #include <Values.h>
+#include <Console.h>
+
 
 
 __global__ void setup_kernel ( curandState * state, unsigned long seed, unsigned int maxParticles)
@@ -81,6 +82,24 @@ __global__ void kernel(float *x, float *y, float *z,
 
 }
 
+int CudaControler::testDevices()
+{
+	int devCount;
+		cudaGetDeviceCount(&devCount);
+		if(devCount<1)
+		{
+			cPrint("Error: No devices found\n", 1);
+			return 1;
+		}else
+		{
+			cPrint("Devices found: " + std::to_string(devCount) + "\nDevice using: ", 1);
+			cudaDeviceProp devProp;
+			cudaGetDeviceProperties(&devProp, 0);
+			cPrint(devProp.name, 1);
+			cPrint("\n",1);
+		}
+		return 0;
+}
 void CudaControler::showDevices()
 {
 	/*
@@ -119,6 +138,7 @@ void CudaControler::showDevices()
 		}
 		*/
 }
+
 
 void CudaControler::setKernel()
 {
@@ -201,5 +221,5 @@ void CudaControler::step(float dt)
 			p++;
 		}
 	}
-	printf("Particulas: %i\n", p);
+	cPrint("Particulas: " + std::to_string(p) + "\n", 3);
 }
