@@ -21,7 +21,7 @@ namespace values
         const float e_Radious = 1.f;                   //Emitter radious
         const unsigned int e_ParticlesSecond = 2;      //Not used
         const unsigned int e_EmissionFrec = 1000;      //In 1/1000
-        const unsigned int e_MaxParticles = 50000;     //Max Particles
+        const unsigned int e_MaxParticles = 5;     //Max Particles
 
             /*
             *

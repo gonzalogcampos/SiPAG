@@ -11,10 +11,24 @@
 
 #include <curand.h>
 #include <curand_kernel.h>
+#include <cuda_gl_interop.h>
+
 
 #include <CudaControler.h>
 #include <Values.h>
 #include <Console.h>
+
+enum Data
+{
+	PARTICLE_X,
+	PARTICLE_Y,
+	PARTICLE_Z,
+	PARTICLE_VX,
+	PARTICLE_VY,
+	PARTICLE_VZ,
+	PARTICLE_LT,
+	PARTICLE_LR
+};
 
 
 
@@ -50,13 +64,13 @@ __global__ void kernel(float *x, float *y, float *z,
 			if(r<emitterFrec)
 			{
 				r=curand(&state[id])%100;
-				x[id] = 0.f;
+				//x[id] = 0.f;
 				y[id] = 0.f;
 				z[id] = 0.f;
 
-				vx[id] = 1.f;
-				vy[id] = 1.f;
-				vz[id] = 1.f;
+				vx[id] = 10.f;
+				vy[id] = 100.f;
+				vz[id] = 1000.f;
 
 				lt[id] = 0.f;
 				lr[id] = life -life*rLife + 2*life*rLife*r/100;
@@ -69,9 +83,9 @@ __global__ void kernel(float *x, float *y, float *z,
 			vz[id] = vz[id] - vz[id]*vDecay*dt;
 
 			//Position addition
-			x[id] = vx[id]*dt;
-			y[id] = vy[id]*dt;
-			z[id] = vz[id]*dt;
+			x[id] += vx[id]*dt;
+			y[id] += vy[id]*dt;
+			z[id] += vz[id]*dt;
 
 			//Life set
 			lr[id] = lr[id] - dt;
@@ -90,53 +104,22 @@ int CudaControler::testDevices()
 		{
 			cPrint("Error: No devices found\n", 1);
 			return 1;
-		}else
-		{
+		}
 			cPrint("Devices found: " + std::to_string(devCount) + "\nDevice using: ", 1);
 			cudaDeviceProp devProp;
 			cudaGetDeviceProperties(&devProp, 0);
 			cPrint(devProp.name, 1);
 			cPrint("\n",1);
-		}
+			cudaGLSetGLDevice(0);
+
 		return 0;
 }
-void CudaControler::showDevices()
-{
-	/*
-	    // Number of CUDA devices
-		int devCount;
-		cudaGetDeviceCount(&devCount);
-		printf("CUDA Device Query...\n");
-		printf("There are %d CUDA devices.\n", devCount);
 
-		// Iterate through devices
-		for (int i = 0; i < devCount; ++i)
-		{
-			// Get device properties
-			printf("\nCUDA Device #%d\n", i);
-			cudaDeviceProp devProp;
-			cudaGetDeviceProperties(&devProp, i);
-			printf("Major revision number:         %d\n",  devProp.major);
-			printf("Minor revision number:         %d\n",  devProp.minor);
-			printf("Name:                          %s\n",  devProp.name);
-			printf("Total global memory:           %u\n",  devProp.totalGlobalMem);
-			printf("Total shared memory per block: %u\n",  devProp.sharedMemPerBlock);
-			printf("Total registers per block:     %d\n",  devProp.regsPerBlock);
-			printf("Warp size:                     %d\n",  devProp.warpSize);
-			printf("Maximum memory pitch:          %u\n",  devProp.memPitch);
-			printf("Maximum threads per block:     %d\n",  devProp.maxThreadsPerBlock);
-			for (int i = 0; i < 3; ++i)
-			printf("Maximum dimension %d of block:  %d\n", i, devProp.maxThreadsDim[i]);
-			for (int i = 0; i < 3; ++i)
-			printf("Maximum dimension %d of grid:   %d\n", i, devProp.maxGridSize[i]);
-			printf("Clock rate:                    %d\n",  devProp.clockRate);
-			printf("Total constant memory:         %u\n",  devProp.totalConstMem);
-			printf("Texture alignment:             %u\n",  devProp.textureAlignment);
-			printf("Concurrent copy and execution: %s\n",  (devProp.deviceOverlap ? "Yes" : "No"));
-			printf("Number of multiprocessors:     %d\n",  devProp.multiProcessorCount);
-			printf("Kernel execution timeout:      %s\n",  (devProp.kernelExecTimeoutEnabled ? "Yes" : "No"));
-		}
-		*/
+std::string CudaControler::getDevice()
+{
+	cudaDeviceProp devProp;
+	cudaGetDeviceProperties(&devProp, 0);
+	return devProp.name;
 }
 
 
@@ -147,7 +130,7 @@ void CudaControler::setKernel()
 	size_t bytes = values::e_MaxParticles*sizeof(float);
 
 	//Allocate memory for each vector in host
-	h_lr = (float*)malloc(bytes);
+	h_resource = (float*)malloc(bytes);
 	
 	//Allocate memory for each vector in device
 	cudaMalloc(&d_x, bytes);
@@ -162,11 +145,11 @@ void CudaControler::setKernel()
 	cudaMalloc(&d_lr, bytes);
 
 	// Initialize vectors on host
-	for (size_t i = 0; i< sizeof(h_lr)/sizeof(*h_lr); i++)
-		h_lr[i] = -1.f;
+	for (size_t i = 0; i< sizeof(h_resource)/sizeof(*h_resource); i++)
+		h_resource[i] = -1.f;
 
 	// Copy host vectors to device
-	cudaMemcpy( d_lr, h_lr, bytes, cudaMemcpyHostToDevice);
+	cudaMemcpy( d_lr, h_resource, bytes, cudaMemcpyHostToDevice);
 
 	// Number of threads in each block
 	blockSize = values::cu_BlockSize;
@@ -188,11 +171,16 @@ void CudaControler::closeKernel()
 		cudaFree(d_lr);
 
 		// Release host memory
-		free(h_lr);
+		free(h_resource);
 }
 
 void CudaControler::step(float dt)
 {
+	//Set the buffers
+	//size_t bytes = values::e_MaxParticles*sizeof(float);
+	//cudaSafeCall( cudaGraphicsMapResources(1, &resource_x) );
+	//cudaSafeCall( cudaGraphicsResourceGetMappedPointer((void **)&d_x, &bytes, resource_x) );
+
 	//Execute Kernel
 	//Random device States
 	curandState* devStates;
@@ -210,16 +198,81 @@ void CudaControler::step(float dt)
 	
 	cudaFree(devStates);
 
-	// Copy array back to host
+
+
+	//printData(PARTICLE_X);
+	//printData(PARTICLE_VX);
+
+
+	//Reset the buffers
+	//cudaGraphicsUnmapResources(1, &resource_x);
+}
+
+
+void CudaControler::sendBuffer(unsigned int buffer)
+{
+	
+	//cudaSafeCall( cudaGraphicsGLRegisterBuffer(&resource_x, (GLuint)buffer, cudaGraphicsRegisterFlagsNone) );
+}
+
+void CudaControler::cudaSafeCall(cudaError err){
+  if(cudaSuccess != err) {
+	  std::string m = cudaGetErrorString(err);
+	  cPrint("Error in CUDA: " + m + "\n", 1);
+  }
+}
+
+
+void CudaControler::printData(Data d)
+{
 	size_t bytes = values::e_MaxParticles*sizeof(float);
-	cudaMemcpy( h_lr, d_lr, bytes, cudaMemcpyDeviceToHost );
-	int p = 0;
+
+	cPrint("Cuda:   ", 2);
+
+	// Copy array back to host
+	switch(d)
+	{
+		case PARTICLE_X:
+			cPrint("X:   ", 2);
+			cudaMemcpy( h_resource, d_x, bytes, cudaMemcpyDeviceToHost );
+		break;		
+		case PARTICLE_Y:
+			cPrint("Y:   ", 2);
+			cudaMemcpy( h_resource, d_y, bytes, cudaMemcpyDeviceToHost );
+		break;
+		case PARTICLE_Z:
+			cPrint("Z:   ", 2);
+			cudaMemcpy( h_resource, d_z, bytes, cudaMemcpyDeviceToHost );
+		break;
+		case PARTICLE_VX:
+			cPrint("VX:   ", 2);
+			cudaMemcpy( h_resource, d_vx, bytes, cudaMemcpyDeviceToHost );
+		break;
+		case PARTICLE_VY:
+			cPrint("VY:   ", 2);
+			cudaMemcpy( h_resource, d_vy, bytes, cudaMemcpyDeviceToHost );
+		break;
+		case PARTICLE_VZ:
+			cPrint("VZ:   ", 2);
+			cudaMemcpy( h_resource, d_vz, bytes, cudaMemcpyDeviceToHost );
+		break;
+		case PARTICLE_LT:
+			cPrint("LT:   ", 2);
+			cudaMemcpy( h_resource, d_lt, bytes, cudaMemcpyDeviceToHost );
+		break;
+		case PARTICLE_LR:
+			cPrint("LR:   ", 2);
+			cudaMemcpy( h_resource, d_lr, bytes, cudaMemcpyDeviceToHost );
+		break;
+		default:
+			cPrint("X:   ", 2);
+			cudaMemcpy( h_resource, d_x, bytes, cudaMemcpyDeviceToHost );
+		break;
+	}
+
 	for(int i = 0; i<values::e_MaxParticles; i++)
 	{
-		if(h_lr[i]>=0)
-		{
-			p++;
-		}
+		cPrint(std::to_string(h_resource[i]) + " ", 2);
 	}
-	cPrint("Particulas: " + std::to_string(p) + "\n", 3);
+	cPrint("\n", 1);
 }

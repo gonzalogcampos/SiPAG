@@ -1,4 +1,8 @@
 #pragma once
+#include <iostream>
+
+enum Data;
+
 
 class CudaControler
 {
@@ -13,6 +17,8 @@ class CudaControler
         void setKernel();
         void closeKernel();
         int testDevices();
+        std::string getDevice();
+        void sendBuffer(unsigned int buffer);
         
     private:
 
@@ -20,12 +26,14 @@ class CudaControler
         ~CudaControler(){}
 
         void showDevices();
+        void cudaSafeCall(cudaError err);
+        void printData(Data d);
 
-		float *h_lr; //life remaingin
+		float *h_resource;    //life remaingin
 
-        float *d_x;	//position x
-	    float *d_y;	//position y
-	    float *d_z;  //position z
+        float *d_x;	    //position x
+	    float *d_y;	    //position y
+	    float *d_z;     //position z
 
 	    float *d_vx;	//velocity x
 	    float *d_vy;	//velocity y
@@ -35,4 +43,7 @@ class CudaControler
 	    float *d_lr;	//life remaining
 
         int blockSize, gridSize;
+
+        cudaGraphicsResource_t resource_x = 0;
+
 };

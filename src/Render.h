@@ -1,6 +1,8 @@
 #pragma once
 
 #include <iostream>
+#include <GL/glew.h>
+
 class Render
 {
     public:
@@ -13,11 +15,21 @@ class Render
         void start();
         void draw();
         void close();
-        void createBuffers();
 
     private:
         Render(){}
         ~Render(){}
         std::string loadShader(char* path);
-        int compileShaders();
+        GLuint compileShaders();
+        void createBuffers();
+
+
+
+
+        GLuint rendering_program;
+        GLuint vertex_array_object;
+
+
+        //Buffers
+        GLuint bufferX, bufferY, bufferZ, bufferL;
 };
