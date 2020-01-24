@@ -33,6 +33,9 @@ int start(int argv, char **argc)
 
     std::string title = "SiPAG | " + cudaControler->getDevice();
   	window = glutCreateWindow(title.c_str());
+
+    if(createMenu()!=0)
+        return 1;
     
     cudaControler->setKernel();
     render->start();
@@ -59,4 +62,9 @@ void close(void)
 {
     cudaControler->closeKernel();
     render->close();
+}
+
+int createMenu()
+{
+    return 0;
 }

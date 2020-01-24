@@ -19,6 +19,7 @@ class CudaControler
         int testDevices();
         std::string getDevice();
         void sendBuffer(unsigned int buffer);
+        void sendBuffers(unsigned int bufferX,unsigned int bufferY, unsigned int bufferZ, unsigned int bufferL);
         
     private:
 
@@ -45,5 +46,8 @@ class CudaControler
         int blockSize, gridSize;
 
         cudaGraphicsResource_t resource_x = 0;
+        cudaGraphicsResource_t resource_y = 0;
+        cudaGraphicsResource_t resource_z = 0;
+        cudaGraphicsResource_t resource_l = 0;
 
 };

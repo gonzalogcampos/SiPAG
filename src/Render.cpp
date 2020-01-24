@@ -38,13 +38,15 @@ void Render::start()
 
 
 
+
     //Creamos los buffers
     createBuffers();
     //Los mandamos a cuda
-    //CudaControler::getInstance()->sendBuffer(bufferX);
+    CudaControler::getInstance()->sendBuffers(bufferX, bufferY, bufferZ, bufferL);
     
 
     rendering_program = compileShaders();
+
 
     
     glCreateVertexArrays(1, &vertex_array_object);
@@ -61,9 +63,12 @@ void Render::draw()
     // Use the program object we created earlier for rendering
     glUseProgram(rendering_program);
 
+
+    //glVertexAttribPointer(bufferX, 1, GL_FLOAT, GL_FALSE, sizeof(float), &bufferX);
+
     // Draw one point
-    glPointSize(10.f);
-    glDrawArrays(GL_POINTS, 0, 1);
+    glPointSize(5.f);
+    glDrawArrays(GL_POINTS, 0, values::e_MaxParticles);
 }
 
 void Render::close()
@@ -82,15 +87,20 @@ void Render::createBuffers()
     glBufferData(GL_ARRAY_BUFFER, bytes, NULL, GL_DYNAMIC_DRAW);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 
+    glGenBuffers(1, &bufferY);
+    glBindBuffer(GL_ARRAY_BUFFER, bufferY);
+    glBufferData(GL_ARRAY_BUFFER, bytes, NULL, GL_DYNAMIC_DRAW);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-    // This is the data that we will place into the buffer object
-    //static const float data[] = {2.5, 1.0, 5.0, 8.8, 3.8};
-    // Get a pointer to the buffer's data store
-    //void * ptr = glMapNamedBuffer(bufferX, GL_WRITE_ONLY);
-    // Copy our data into it...
-    //memcpy(ptr, data, bytes);
-    // Tell OpenGL that we're done with the pointer
-    //glUnmapNamedBuffer(GL_ARRAY_BUFFER);
+    glGenBuffers(1, &bufferZ);
+    glBindBuffer(GL_ARRAY_BUFFER, bufferZ);
+    glBufferData(GL_ARRAY_BUFFER, bytes, NULL, GL_DYNAMIC_DRAW);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+    glGenBuffers(1, &bufferL);
+    glBindBuffer(GL_ARRAY_BUFFER, bufferL);
+    glBufferData(GL_ARRAY_BUFFER, bytes, NULL, GL_DYNAMIC_DRAW);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 }
 

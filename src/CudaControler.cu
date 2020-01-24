@@ -133,7 +133,7 @@ void CudaControler::setKernel()
 	h_resource = (float*)malloc(bytes);
 	
 	//Allocate memory for each vector in device
-	cudaMalloc(&d_x, bytes);
+	//cudaMalloc(&d_x, bytes);
 	cudaMalloc(&d_y, bytes);
 	cudaMalloc(&d_z, bytes);
 
@@ -161,13 +161,13 @@ void CudaControler::setKernel()
 void CudaControler::closeKernel()
 {
 		// Release device memory
-		cudaFree(d_x);
-		cudaFree(d_y);
-		cudaFree(d_z);
+		//cudaFree(d_x);
+		//cudaFree(d_y);
+		//cudaFree(d_z);
 		cudaFree(d_vx);
 		cudaFree(d_vy);
 		cudaFree(d_vz);
-		cudaFree(d_lt);
+		//cudaFree(d_lt);
 		cudaFree(d_lr);
 
 		// Release host memory
@@ -177,9 +177,15 @@ void CudaControler::closeKernel()
 void CudaControler::step(float dt)
 {
 	//Set the buffers
-	//size_t bytes = values::e_MaxParticles*sizeof(float);
-	//cudaSafeCall( cudaGraphicsMapResources(1, &resource_x) );
-	//cudaSafeCall( cudaGraphicsResourceGetMappedPointer((void **)&d_x, &bytes, resource_x) );
+	size_t bytes = values::e_MaxParticles*sizeof(float);
+	cudaSafeCall( cudaGraphicsMapResources(1, &resource_x) );
+	cudaSafeCall( cudaGraphicsMapResources(1, &resource_y) );
+	cudaSafeCall( cudaGraphicsMapResources(1, &resource_z) );
+	cudaSafeCall( cudaGraphicsMapResources(1, &resource_l) );
+	cudaSafeCall( cudaGraphicsResourceGetMappedPointer((void **)&d_x, &bytes, resource_x) );
+	cudaSafeCall( cudaGraphicsResourceGetMappedPointer((void **)&d_y, &bytes, resource_y) );
+	cudaSafeCall( cudaGraphicsResourceGetMappedPointer((void **)&d_z, &bytes, resource_z) );
+	cudaSafeCall( cudaGraphicsResourceGetMappedPointer((void **)&d_lt, &bytes, resource_l) );
 
 	//Execute Kernel
 	//Random device States
@@ -205,15 +211,30 @@ void CudaControler::step(float dt)
 
 
 	//Reset the buffers
-	//cudaGraphicsUnmapResources(1, &resource_x);
+	cudaGraphicsUnmapResources(1, &resource_x);
+	cudaGraphicsUnmapResources(1, &resource_y);
+	cudaGraphicsUnmapResources(1, &resource_z);
+	cudaGraphicsUnmapResources(1, &resource_l);
 }
 
 
 void CudaControler::sendBuffer(unsigned int buffer)
 {
 	
-	//cudaSafeCall( cudaGraphicsGLRegisterBuffer(&resource_x, (GLuint)buffer, cudaGraphicsRegisterFlagsNone) );
+	cudaSafeCall( cudaGraphicsGLRegisterBuffer(&resource_x, (GLuint)buffer, cudaGraphicsRegisterFlagsNone) );
 }
+
+
+void CudaControler::sendBuffers(unsigned int bufferX,unsigned int bufferY, unsigned int bufferZ, unsigned int bufferL)
+{
+	
+	cudaSafeCall( cudaGraphicsGLRegisterBuffer(&resource_x, (GLuint)bufferX, cudaGraphicsRegisterFlagsNone) );
+	cudaSafeCall( cudaGraphicsGLRegisterBuffer(&resource_y, (GLuint)bufferY, cudaGraphicsRegisterFlagsNone) );
+	cudaSafeCall( cudaGraphicsGLRegisterBuffer(&resource_z, (GLuint)bufferZ, cudaGraphicsRegisterFlagsNone) );
+	cudaSafeCall( cudaGraphicsGLRegisterBuffer(&resource_l, (GLuint)bufferL, cudaGraphicsRegisterFlagsNone) );
+
+}
+
 
 void CudaControler::cudaSafeCall(cudaError err){
   if(cudaSuccess != err) {

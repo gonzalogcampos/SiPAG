@@ -19,8 +19,7 @@
                 //"-lgdi32",  
                 //"-luser32", 
                 "-Llib/GL", 
-                "-lglew32", 
-                "-lglfw3", 
+                "-lglew32",
                 "-lfreeglut" , 
                 "-lglu32", 
                 "-lopengl32"
@@ -62,6 +61,8 @@
                 "-lfreeglut" , 
                 "-lglu32", 
                 "-lopengl32"
+                //"-Llib/SFML",
+                //"-lsfml-window"
                 //"-lntdll",
                 //"-lshell32"
             ],

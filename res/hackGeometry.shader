@@ -6,7 +6,6 @@ layout (max_vertices = 4) out;
    
 // GLSL Hacker automatic uniforms:
 uniform mat4 gxl3d_ProjectionMatrix;
-uniform float particle_size;
 
 in Vertex
 {
@@ -22,7 +21,7 @@ void main (void)
   vec4 P = gl_in[0].gl_Position;
 
   // a: left-bottom 
-  vec2 va = P.xy + vec2(-0.5, -0.5) * particle_size;
+  vec2 va = P.xy + vec2(-0.5, -0.5) * 1;
   gl_Position = gxl3d_ProjectionMatrix * vec4(va, P.zw);
   Vertex_UV = vec2(0.0, 0.0);
   Vertex_Color = vertex[0].color;
