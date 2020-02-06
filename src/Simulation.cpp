@@ -1,3 +1,7 @@
+//MIT License
+//Copyright (c) 2019 Gonzalo G Campos
+
+
 #include <Simulation.h>
 #include <Console.h>
 #include <CudaControler.h>
@@ -29,7 +33,7 @@ int start(int argv, char **argc)
     }
 
 	glutInit(&argv, argc);
-	glutInitWindowSize(720, 720);
+	glutInitWindowSize(300, 720);
     glutInitDisplayMode(GLUT_RGB | GLUT_STENCIL | GLUT_DOUBLE | GLUT_DEPTH);
     glutSetOption(GLUT_ACTION_ON_WINDOW_CLOSE, GLUT_ACTION_CONTINUE_EXECUTION);
 

@@ -1,3 +1,6 @@
+//MIT License
+//Copyright (c) 2019 Gonzalo G Campos
+
 #include <OClock.h>
 #include <Values.h>
 #include <Console.h>
@@ -17,8 +20,8 @@ float OClock::step()
     std::chrono::time_point<std::chrono::high_resolution_clock> currentTime = std::chrono::high_resolution_clock::now();
     elapsedTime = currentTime - lastTime;
     lastTime = currentTime;
-    float fps = 1/elapsedTime.count();
-    cPrint("FPS: " + cString(fps) + "\n", 2);
+    fps = 1/elapsedTime.count();
+    cPrint("FPS: " + cString(fps) + "\n", 3);
     return elapsedTime.count();
 }
 

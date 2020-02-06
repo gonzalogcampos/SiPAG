@@ -1,3 +1,6 @@
+//MIT License
+//Copyright (c) 2019 Gonzalo G Campos
+
 #include <Render.h>
 #include <fstream>
 #include <sstream>
@@ -5,6 +8,7 @@
 #include <CudaControler.h>
 #include <Values.h>
 #include <shader_fragment.h>
+#include <shader_geometry.h>
 #include <shader_vertex.h>
 
 
@@ -124,6 +128,7 @@ void Render::createBuffers()
 GLuint Render::compileShaders()
 {
         GLuint vertex_shader;
+        GLuint geometry_shader;
         GLuint fragment_shader;
         GLuint program;
 
@@ -135,6 +140,10 @@ GLuint Render::compileShaders()
         vertex_shader = glCreateShader(GL_VERTEX_SHADER);
         glShaderSource(vertex_shader, 1, vertex_shader_source, NULL);
         glCompileShader(vertex_shader);
+        // Create and compile geometry shader
+        geometry_shader = glCreateShader(GL_GEOMETRY_SHADER);
+        glShaderSource(geometry_shader, 1, geometry_shader_source, NULL);
+        glCompileShader(geometry_shader);        
         // Create and compile fragment shader
         fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
         glShaderSource(fragment_shader, 1, fragment_shader_source, NULL);
@@ -142,12 +151,14 @@ GLuint Render::compileShaders()
         // Create program, attach shaders to it, and link it
         program = glCreateProgram();
         glAttachShader(program, vertex_shader);
+        glAttachShader(program, geometry_shader);
         glAttachShader(program, fragment_shader);
 
 
         glLinkProgram(program);
         // Delete the shaders as the program has them now
         glDeleteShader(vertex_shader);
+        glDeleteShader(geometry_shader);
         glDeleteShader(fragment_shader);
 
         return program;

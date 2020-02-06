@@ -3,7 +3,7 @@
 
 
 // Source code for fragment shader
-static const GLchar* fragment_shader_source[] =
+static const GLchar* fragment_shader_dots_source[] =
 {
 "#version 450 core                              \n"
 "out vec4 color;                                \n"

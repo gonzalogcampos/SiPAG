@@ -1,11 +1,14 @@
+//MIT License
+//Copyright (c) 2019 Gonzalo G Campos
+
+
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
 
 #include <Windows.h>
 
-// Cabecera necesaria para las rutinas del runtime, es decir, todas
-// aquellas que empiezan con cudaXXXXX.
 #include "cuda_runtime.h"
 #include "device_launch_parameters.h"
 
