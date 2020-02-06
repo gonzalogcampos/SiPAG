@@ -1,4 +1,4 @@
-
+#pragma once
 
 int start(int argv, char **argc);
 

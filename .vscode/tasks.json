@@ -13,7 +13,7 @@
                 "-Isrc/.",
                 "src/CudaControler.cu",
                 "-x", "cu",
-                "src/SIPAG.cpp", "src/Console.cpp", "src/Render.cpp", "src/Simulation.cpp",
+                "src/SIPAG.cpp", "src/Console.cpp", "src/Render.cpp", "src/Simulation.cpp", "src/OClock.cpp",
                 "-Iinclude/",
                 //"-lkernel32", 
                 //"-lgdi32",  
@@ -23,7 +23,7 @@
                 "-lfreeglut" , 
                 "-lglu32", 
                 "-lopengl32",
-                "-lglui32"
+                //"-lglui32"
                 //"-lntdll",
                 //"-lshell32"
             ],

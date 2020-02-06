@@ -28,7 +28,7 @@ namespace values
             * -------- PARTICLE --------
             * 
             */
-        const float p_LifeTime = 10.f;             //Life of the particle in seconds
+        const float p_LifeTime = 1.f;             //Life of the particle in seconds
         const float p_RLifeTime = 0.2f;            //% of random in life
         const float p_Size = 1.f;                  //Size of the particle
         const float p_SizeEvolution = .05f;        //%per second size improves

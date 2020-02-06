@@ -68,7 +68,7 @@ void Render::draw()
     enableAtrib();
 
     // Draw one point
-    glPointSize(5.f);
+    glPointSize(1.f);
     glDrawArrays(GL_POINTS, 0, values::e_MaxParticles);
 
 
@@ -80,6 +80,14 @@ void Render::close()
 {
     glDeleteProgram(rendering_program);
     glDeleteVertexArrays(1, &vertex_array_object);
+
+
+    glDeleteBuffers(1, &bufferX);
+    glDeleteBuffers(1, &bufferY);
+    glDeleteBuffers(1, &bufferZ);
+    glDeleteBuffers(1, &bufferLT);
+    glDeleteBuffers(1, &bufferLR);
+
 }
 
 

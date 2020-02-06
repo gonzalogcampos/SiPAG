@@ -15,3 +15,18 @@ void cPrint(std::string text, int priority)
         std::cout<<text;
     }
 }
+
+
+std::string cString( float n )
+{
+    std::ostringstream ss;
+    ss << n;
+    return ss.str();
+}
+
+std::string cString( int n )
+{
+    std::ostringstream ss;
+    ss << n;
+    return ss.str();
+}

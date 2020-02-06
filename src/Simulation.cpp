@@ -2,14 +2,14 @@
 #include <Console.h>
 #include <CudaControler.h>
 #include <Render.h>
+#include <OClock.h>
 #include <GL/freeglut.h>
-#include <iostream>
 
 //#include <GL/glui.h>
 
 CudaControler *cudaControler;
 Render *render;
-
+OClock oclock;
 int window;
 //GLUI *subwindow;
 
@@ -41,6 +41,7 @@ int start(int argv, char **argc)
         return 1;
     
     cudaControler->setKernel();
+    oclock.start();
     render->start();
 
     glutDisplayFunc(step);
@@ -54,7 +55,7 @@ int start(int argv, char **argc)
 
 void step(void)
 {
-    cudaControler->step(0.1);
+    cudaControler->step(oclock.step());
     render->draw();
 
     glutSwapBuffers();
