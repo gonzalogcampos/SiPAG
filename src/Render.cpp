@@ -37,18 +37,16 @@ void Render::start()
     glDebugMessageCallback( MessageCallback, 0 );
 
 
+    rendering_program = compileShaders();
 
 
     //Creamos los buffers
     createBuffers();
     //Los mandamos a cuda
-    CudaControler::getInstance()->sendBuffers(bufferX, bufferY, bufferZ, bufferL);
+    CudaControler::getInstance()->conectBuffers(bufferX, bufferY, bufferZ, bufferLT, bufferLR);
     
 
-    rendering_program = compileShaders();
 
-
-    
     glCreateVertexArrays(1, &vertex_array_object);
     glBindVertexArray(vertex_array_object);
 
@@ -57,7 +55,7 @@ void Render::start()
 void Render::draw()
 {
 	// Clear the screen
-    const GLfloat color[] = { 1.0f, 0.f, 0.0f, 1.0f };
+    const GLfloat color[] = { 0.0f, 0.f, 0.0f, 1.0f };
     glClearBufferfv(GL_COLOR, 0, color);
 
     // Use the program object we created earlier for rendering
@@ -66,9 +64,16 @@ void Render::draw()
 
     //glVertexAttribPointer(bufferX, 1, GL_FLOAT, GL_FALSE, sizeof(float), &bufferX);
 
+
+    enableAtrib();
+
     // Draw one point
     glPointSize(5.f);
     glDrawArrays(GL_POINTS, 0, values::e_MaxParticles);
+
+
+    diableAtrib();
+    //glDrawElements(GL_POINTS, 0, )
 }
 
 void Render::close()
@@ -81,27 +86,30 @@ void Render::close()
 void Render::createBuffers()
 {
     size_t bytes = values::e_MaxParticles*sizeof(float);
+    
 
     glGenBuffers(1, &bufferX);
     glBindBuffer(GL_ARRAY_BUFFER, bufferX);
     glBufferData(GL_ARRAY_BUFFER, bytes, NULL, GL_DYNAMIC_DRAW);
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
+
 
     glGenBuffers(1, &bufferY);
     glBindBuffer(GL_ARRAY_BUFFER, bufferY);
     glBufferData(GL_ARRAY_BUFFER, bytes, NULL, GL_DYNAMIC_DRAW);
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
 
     glGenBuffers(1, &bufferZ);
     glBindBuffer(GL_ARRAY_BUFFER, bufferZ);
     glBufferData(GL_ARRAY_BUFFER, bytes, NULL, GL_DYNAMIC_DRAW);
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-    glGenBuffers(1, &bufferL);
-    glBindBuffer(GL_ARRAY_BUFFER, bufferL);
+    glGenBuffers(1, &bufferLT);
+    glBindBuffer(GL_ARRAY_BUFFER, bufferLT);
     glBufferData(GL_ARRAY_BUFFER, bytes, NULL, GL_DYNAMIC_DRAW);
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
 
+    glGenBuffers(1, &bufferLR);
+    glBindBuffer(GL_ARRAY_BUFFER, bufferLR);
+    glBufferData(GL_ARRAY_BUFFER, bytes, NULL, GL_DYNAMIC_DRAW);
+
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
 
@@ -127,6 +135,8 @@ GLuint Render::compileShaders()
         program = glCreateProgram();
         glAttachShader(program, vertex_shader);
         glAttachShader(program, fragment_shader);
+
+
         glLinkProgram(program);
         // Delete the shaders as the program has them now
         glDeleteShader(vertex_shader);
@@ -162,3 +172,39 @@ std::string Render::loadShader(char* path)
 
 
 
+void Render::enableAtrib()
+{
+    glBindBuffer(GL_ARRAY_BUFFER, bufferX);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 1, GL_FLOAT, GL_FALSE, 0, (GLubyte *)NULL);
+
+    glBindBuffer(GL_ARRAY_BUFFER, bufferY);
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(1, 1, GL_FLOAT, GL_FALSE, 0, (GLubyte *)NULL);
+
+    glBindBuffer(GL_ARRAY_BUFFER, bufferZ);
+    glEnableVertexAttribArray(2);
+    glVertexAttribPointer(2, 1, GL_FLOAT, GL_FALSE, 0, (GLubyte *)NULL);
+
+    glBindBuffer(GL_ARRAY_BUFFER, bufferLT);
+    glEnableVertexAttribArray(3);
+    glVertexAttribPointer(3, 1, GL_FLOAT, GL_FALSE, 0, (GLubyte *)NULL);
+
+    glBindBuffer(GL_ARRAY_BUFFER, bufferLR);
+    glEnableVertexAttribArray(4);
+    glVertexAttribPointer(4, 1, GL_FLOAT, GL_FALSE, 0, (GLubyte *)NULL);
+
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+}
+
+void Render::diableAtrib()
+{
+    glDisableVertexAttribArray(0);
+    glDisableVertexAttribArray(1);
+    glDisableVertexAttribArray(2);
+    glDisableVertexAttribArray(3);
+    glDisableVertexAttribArray(4);
+
+    glBindVertexArray(0);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+}

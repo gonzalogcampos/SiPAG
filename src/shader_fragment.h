@@ -1,7 +1,7 @@
 // Source code for fragment shader
 static const GLchar* fragment_shader_source[] =
 {
-"#version 150 core                              \n"
+"#version 450 core                              \n"
 "out vec4 color;                                \n"
 "void main()                                    \n"
 "{                                              \n"

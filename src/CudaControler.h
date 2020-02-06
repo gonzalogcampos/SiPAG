@@ -18,8 +18,8 @@ class CudaControler
         void closeKernel();
         int testDevices();
         std::string getDevice();
-        void sendBuffer(unsigned int buffer);
-        void sendBuffers(unsigned int bufferX,unsigned int bufferY, unsigned int bufferZ, unsigned int bufferL);
+        //void reserveGrid();
+        void conectBuffers(unsigned int bufferX,unsigned int bufferY, unsigned int bufferZ, unsigned int bufferLT, unsigned int bufferLR);
         
     private:
 
@@ -29,8 +29,9 @@ class CudaControler
         void showDevices();
         void cudaSafeCall(cudaError err);
         void printData(Data d);
+        void copyConstants();
 
-		float *h_resource;    //life remaingin
+		float *h_resource;    //host resource for  copy buffers
 
         float *d_x;	    //position x
 	    float *d_y;	    //position y
@@ -48,6 +49,7 @@ class CudaControler
         cudaGraphicsResource_t resource_x = 0;
         cudaGraphicsResource_t resource_y = 0;
         cudaGraphicsResource_t resource_z = 0;
-        cudaGraphicsResource_t resource_l = 0;
+        cudaGraphicsResource_t resource_lt = 0;
+        cudaGraphicsResource_t resource_lr = 0;
 
 };

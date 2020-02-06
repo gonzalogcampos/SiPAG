@@ -22,6 +22,8 @@ class Render
         std::string loadShader(char* path);
         GLuint compileShaders();
         void createBuffers();
+        void enableAtrib();
+        void diableAtrib();
 
 
 
@@ -31,5 +33,5 @@ class Render
 
 
         //Buffers
-        GLuint bufferX, bufferY, bufferZ, bufferL;
+        GLuint bufferX, bufferY, bufferZ, bufferLT, bufferLR;
 };

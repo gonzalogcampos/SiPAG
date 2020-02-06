@@ -5,10 +5,13 @@
 #include <GL/freeglut.h>
 #include <iostream>
 
+//#include <GL/glui.h>
+
 CudaControler *cudaControler;
 Render *render;
 
-int window, subwindow;
+int window;
+//GLUI *subwindow;
 
 
 int start(int argv, char **argc)
@@ -66,5 +69,6 @@ void close(void)
 
 int createMenu()
 {
+    //subwindow = GLUI_Master.create_glui_subwindow (window, GLUI_SUBWINDOW_LEFT);
     return 0;
 }
