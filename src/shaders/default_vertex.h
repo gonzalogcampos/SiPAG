@@ -3,7 +3,7 @@
 
 
 // Source code for vertex shader
-static const GLchar* vertex_shader_dost_source[] =
+static const GLchar* default_vertex[] =
 {
 "#version 450 core                                                                              \n"
 "layout (location = 0) in float VertexPositionX;                                                \n"
@@ -11,11 +11,15 @@ static const GLchar* vertex_shader_dost_source[] =
 "layout (location = 2) in float VertexPositionZ;                                                \n"
 "layout (location = 3) in float VertexLifeTime;                                                 \n"
 "layout (location = 4) in float VertexLifeRemaining;                                            \n"
-//"out float gl_Position;                                                                       \n"
-//"out float VertexLifeTime;                                                                    \n"
-//"out float VertexLifeRemaining                                                                \n"
+"out Vertex                                                                                     \n"
+"{                                                                                              \n"
+"  float VertexLifeTime;                                                                        \n"
+"  float VertexLifeRemaining;                                                                   \n"
+"}vertex;                                                                                       \n"
 "void main()                                                                                    \n"
 "{                                                                                              \n"
-"   gl_Position = vec4(VertexPositionX, VertexPositionY- 0.8, VertexPositionZ - 1, 1.0);        \n"
+"   gl_Position = vec4(VertexPositionX, VertexPositionY, VertexPositionZ, 1.0);                 \n"
+"   vertex.VertexLifeTime = VertexLifeTime;                                                     \n"
+"   vertex.VertexLifeRemaining = VertexLifeRemaining;                                           \n"
 "}"
 };

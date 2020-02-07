@@ -9,7 +9,7 @@
 class Render
 {
     public:
-    
+        //Singleton
         static Render* getInstance(){
             static Render only_instance;
             return &only_instance;
@@ -23,18 +23,19 @@ class Render
         Render(){}
         ~Render(){}
         std::string loadShader(char* path);
-        GLuint compileShaders();
+        void compileShaders();
         void createBuffers();
         void enableAtrib();
-        void diableAtrib();
+        void disableAtrib();
+        bool setTexture(char* file);
 
 
 
-
-        GLuint rendering_program;
-        GLuint vertex_array_object;
-
+        //Render programs
+        GLuint default_program, dots_program;
 
         //Buffers
         GLuint bufferX, bufferY, bufferZ, bufferLT, bufferLR;
+
+        GLuint texture;
 };

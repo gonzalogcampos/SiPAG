@@ -17,8 +17,8 @@ class CudaControler
         }
 
         void step(float dt);
-        void setKernel();
-        void closeKernel();
+        void start();
+        void close();
         int testDevices();
         std::string getDevice();
         //void reserveGrid();
@@ -36,6 +36,8 @@ class CudaControler
 
 		float *h_resource;    //host resource for  copy buffers
 
+        float *d_perlin_1, *d_perlin_2;
+
         float *d_x;	    //position x
 	    float *d_y;	    //position y
 	    float *d_z;     //position z
@@ -47,7 +49,7 @@ class CudaControler
 	    float *d_lt;	//life time
 	    float *d_lr;	//life remaining
 
-        int blockSize, gridSize;
+        int particles_blockSize, particles_gridSize, perlin_blockSize, perlin_gridSize;
 
         cudaGraphicsResource_t resource_x = 0;
         cudaGraphicsResource_t resource_y = 0;

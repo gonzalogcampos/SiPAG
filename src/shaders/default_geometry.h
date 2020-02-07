@@ -3,7 +3,7 @@
 
 
 // Source code for geometry shader
-static const GLchar* geometry_shader_source[] =
+static const GLchar* default_geometry[] =
 {
 "#version 450 core                                                      \n"
 "layout (points) in;                                                    \n"

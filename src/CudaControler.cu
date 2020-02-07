@@ -34,7 +34,12 @@ enum Data
 };
 
 //Constants for particle
-__constant__ float d_rLife[1], d_life[1], d_vDecay[1], d_dt[1], d_initVelocity[1], d_rInitVelocity[1];
+	//Life
+	__constant__ float d_rLife[1], d_life[1];
+	//Velocity
+	__constant__ float d_initVelocityX[1], d_initVelocityY[1], d_initVelocityZ[1];
+	__constant__ float d_rInitVelocityX[1], d_rInitVelocityY[1], d_rInitVelocityZ[1];
+	__constant__ float d_vDecay[1];
 
 //Constants for emitter
 __constant__ unsigned int d_maxParticles[1], d_emitterFrec[1];
@@ -76,15 +81,18 @@ __global__ void kernel(float *x, float *y, float *z,
 
 				r=curand(&state[id])%100;
 
-				vx[id] = d_initVelocity[0] - d_initVelocity[0]*d_rInitVelocity[0] + 2*d_initVelocity[0]*d_rInitVelocity[0]*r/100;
+				vx[id] = d_initVelocityX[0] + d_rInitVelocityX[0]*2.f*((r/100.f)-0.5f);
+				//vx[id] = d_initVelocity[0] - d_initVelocity[0]*d_rInitVelocity[0] + 2*d_initVelocity[0]*d_rInitVelocity[0]*r/100;
 
 				r=curand(&state[id])%100;
 
-				vy[id] = d_initVelocity[0] - d_initVelocity[0]*d_rInitVelocity[0] + 2*d_initVelocity[0]*d_rInitVelocity[0]*r/100;
+				vy[id] = d_initVelocityY[0] + d_rInitVelocityY[0]*2.f*((r/100.f)-0.5f);
+				//vy[id] = d_initVelocity[0] - d_initVelocity[0]*d_rInitVelocity[0] + 2*d_initVelocity[0]*d_rInitVelocity[0]*r/100;
 
 				r=curand(&state[id])%100;
 
-				vz[id] = d_initVelocity[0] - d_initVelocity[0]*d_rInitVelocity[0] + 2*d_initVelocity[0]*d_rInitVelocity[0]*r/100;
+				vz[id] = d_initVelocityZ[0] + d_rInitVelocityZ[0]*2.f*((r/100.f)-0.5f);
+				//vz[id] = d_initVelocity[0] - d_initVelocity[0]*d_rInitVelocity[0] + 2*d_initVelocity[0]*d_rInitVelocity[0]*r/100;
 
 				r=curand(&state[id])%100;
 
@@ -132,6 +140,13 @@ int CudaControler::testDevices()
 			cPrint("\n",1);
 			cudaGLSetGLDevice(0);
 
+			cPrint("  Device Properties:\n", 2);
+			cPrint("    >Total mem: " + cString(devProp.totalGlobalMem/(1024*1024))+" Mb\n" ,2);
+			cPrint("    >Multiprocessor count: " + cString(devProp.multiProcessorCount)+"\n" ,2);
+			cPrint("    >Max thread per Multiprocessor: " + cString(devProp.maxThreadsPerMultiProcessor)+"\n", 2);
+			cPrint("      >Total: " + cString(devProp.multiProcessorCount*devProp.maxThreadsPerMultiProcessor) + "\n", 2);
+
+
 		return 0;
 }
 
@@ -142,8 +157,7 @@ std::string CudaControler::getDevice()
 	return devProp.name;
 }
 
-
-void CudaControler::setKernel()
+void CudaControler::start()
 {
 
 	// Size, in bytes, of each vector
@@ -157,14 +171,20 @@ void CudaControler::setKernel()
 	cudaMalloc(&d_vy, bytes);
 	cudaMalloc(&d_vz, bytes);
 
+	//Allocate memory for perlin noise grids
+	//cudaMalloc(&d_perlin_1, bytes);
+	//cudaMalloc(&d_perlin_2, bytes);
+
 	// Number of threads in each block
-	blockSize = values::cu_BlockSize;
+	particles_blockSize = values::cu_BlockSize;
+	perlin_blockSize = values::cu_BlockSize;
 
 	// Number of blocks in grid
-	gridSize = (int)ceil((float)values::e_MaxParticles/blockSize);
+	particles_gridSize = (int)ceil((float)values::e_MaxParticles/particles_blockSize);
+	perlin_gridSize = (int)ceil((float)(values::g_Size*values::g_Size*values::g_Size)/perlin_blockSize);
 }
 
-void CudaControler::closeKernel()
+void CudaControler::close()
 {
 		// Release device memory
 		cudaFree(d_vx);
@@ -198,9 +218,9 @@ void CudaControler::step(float dt)
 	curandState* devStates;
 	cudaMalloc ( &devStates, values::e_MaxParticles*sizeof( curandState ) );
 	
-	setup_kernel<<<gridSize, blockSize>>> ( devStates, rand()%10000, values::e_MaxParticles);
+	setup_kernel<<<particles_gridSize, particles_blockSize>>> ( devStates, rand()%10000, values::e_MaxParticles);
 
-	kernel<<<gridSize, blockSize>>>(d_x, d_y, d_z, d_vx, d_vy, d_vz, d_lt, d_lr, devStates, dt);
+	kernel<<<particles_gridSize, particles_blockSize>>>(d_x, d_y, d_z, d_vx, d_vy, d_vz, d_lt, d_lr, devStates, dt);
 	
 	cudaFree(devStates);
 
@@ -310,8 +330,12 @@ void CudaControler::copyConstants()
 	cudaSafeCall(cudaMemcpyToSymbol(d_rLife, 		&(values::p_RLifeTime),		sizeof(const float)));
 	cudaSafeCall(cudaMemcpyToSymbol(d_life, 		&(values::p_LifeTime), 		sizeof(const float)));
 	cudaSafeCall(cudaMemcpyToSymbol(d_vDecay, 		&(values::p_VelocityDecay), sizeof(const float)));
-	cudaSafeCall(cudaMemcpyToSymbol(d_initVelocity, &(values::p_InitVelocity), 	sizeof(const float)));
-	cudaSafeCall(cudaMemcpyToSymbol(d_rInitVelocity,&(values::p_RInitVelocity), sizeof(const float)));
+	cudaSafeCall(cudaMemcpyToSymbol(d_initVelocityX, &(values::p_InitVelocityX), 	sizeof(const float)));
+	cudaSafeCall(cudaMemcpyToSymbol(d_initVelocityY, &(values::p_InitVelocityY), 	sizeof(const float)));
+	cudaSafeCall(cudaMemcpyToSymbol(d_initVelocityZ, &(values::p_InitVelocityZ), 	sizeof(const float)));
+	cudaSafeCall(cudaMemcpyToSymbol(d_rInitVelocityX,&(values::p_RInitVelocityX), sizeof(const float)));
+	cudaSafeCall(cudaMemcpyToSymbol(d_rInitVelocityY,&(values::p_RInitVelocityY), sizeof(const float)));
+	cudaSafeCall(cudaMemcpyToSymbol(d_rInitVelocityZ,&(values::p_RInitVelocityZ), sizeof(const float)));
 	cudaSafeCall(cudaMemcpyToSymbol(d_maxParticles, &(values::e_MaxParticles), 	sizeof(const unsigned int)));
 	cudaSafeCall(cudaMemcpyToSymbol(d_emitterFrec, 	&(values::e_EmissionFrec), 	sizeof(const unsigned int)));
 

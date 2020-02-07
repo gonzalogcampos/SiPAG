@@ -3,7 +3,7 @@
 
 
 // Source code for vertex shader
-static const GLchar* vertex_shader_source[] =
+static const GLchar* dots_vertex[] =
 {
 "#version 450 core                                                                              \n"
 "layout (location = 0) in float VertexPositionX;                                                \n"

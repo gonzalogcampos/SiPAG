@@ -8,6 +8,7 @@
 #include <Render.h>
 #include <OClock.h>
 #include <GL/freeglut.h>
+#include <Values.h>
 
 //#include <GL/glui.h>
 
@@ -33,7 +34,7 @@ int start(int argv, char **argc)
     }
 
 	glutInit(&argv, argc);
-	glutInitWindowSize(300, 720);
+	glutInitWindowSize(720, 720);
     glutInitDisplayMode(GLUT_RGB | GLUT_STENCIL | GLUT_DOUBLE | GLUT_DEPTH);
     glutSetOption(GLUT_ACTION_ON_WINDOW_CLOSE, GLUT_ACTION_CONTINUE_EXECUTION);
 
@@ -41,10 +42,17 @@ int start(int argv, char **argc)
     std::string title = "SiPAG | " + cudaControler->getDevice();
   	window = glutCreateWindow(title.c_str());
 
+
+    //Calculate needed memory on device
+    int particles_bytes = values::e_MaxParticles * 8 * 4;
+    int perlin_bytes = values::g_Size*values::g_Size*values::g_Size * 3 * 2 * 4;
+    int bytes = particles_bytes + perlin_bytes;
+    cPrint("Memory allocated in device: " + cString(bytes/1048576) + " Mb\n", 2);
+
     if(createMenu()!=0)
         return 1;
     
-    cudaControler->setKernel();
+    cudaControler->start();
     oclock.start();
     render->start();
 
@@ -68,7 +76,7 @@ void step(void)
 
 void close(void)
 {
-    cudaControler->closeKernel();
+    cudaControler->close();
     render->close();
 }
 

@@ -7,9 +7,13 @@
 #include <Console.h>
 #include <CudaControler.h>
 #include <Values.h>
-#include <shader_fragment.h>
-#include <shader_geometry.h>
-#include <shader_vertex.h>
+#include <shaders/default_fragment.h>
+#include <shaders/default_geometry.h>
+#include <shaders/default_vertex.h>
+#include <shaders/dots_fragment.h>
+#include <shaders/dots_geometry.h>
+#include <shaders/dots_vertex.h>
+#include <iostream>
 
 
 //OPENGL ERROR CALLBACK
@@ -40,20 +44,14 @@ void Render::start()
     glEnable( GL_DEBUG_OUTPUT );
     glDebugMessageCallback( MessageCallback, 0 );
 
+    //Compile shaders
+    compileShaders();
 
-    rendering_program = compileShaders();
-
-
-    //Creamos los buffers
+    //Create buffers
     createBuffers();
-    //Los mandamos a cuda
+
+    //Send buffers to CUDA
     CudaControler::getInstance()->conectBuffers(bufferX, bufferY, bufferZ, bufferLT, bufferLR);
-    
-
-
-    glCreateVertexArrays(1, &vertex_array_object);
-    glBindVertexArray(vertex_array_object);
-
 }
 
 void Render::draw()
@@ -62,30 +60,37 @@ void Render::draw()
     const GLfloat color[] = { 0.0f, 0.f, 0.0f, 1.0f };
     glClearBufferfv(GL_COLOR, 0, color);
 
-    // Use the program object we created earlier for rendering
-    glUseProgram(rendering_program);
+    // Select rendering program
+    switch(values::render_program)
+    {
+        case 0:
+            glUseProgram(default_program);
+            break;
+        case 1:
+            glUseProgram(dots_program);
+            break;
+        default:
+            glUseProgram(default_program);
+            break;
+    }
 
-
-    //glVertexAttribPointer(bufferX, 1, GL_FLOAT, GL_FALSE, sizeof(float), &bufferX);
-
-
+    //Enable buffers
     enableAtrib();
 
-    // Draw one point
-    glPointSize(1.f);
+    //Draw particles
     glDrawArrays(GL_POINTS, 0, values::e_MaxParticles);
 
-
-    diableAtrib();
-    //glDrawElements(GL_POINTS, 0, )
+    //Disable buffers
+    disableAtrib();
 }
 
 void Render::close()
 {
-    glDeleteProgram(rendering_program);
-    glDeleteVertexArrays(1, &vertex_array_object);
+    //Delete programs
+    glDeleteProgram(dots_program);
+    glDeleteProgram(default_program);
 
-
+    //Delete buffers
     glDeleteBuffers(1, &bufferX);
     glDeleteBuffers(1, &bufferY);
     glDeleteBuffers(1, &bufferZ);
@@ -125,43 +130,51 @@ void Render::createBuffers()
 }
 
 
-GLuint Render::compileShaders()
+void Render::compileShaders()
 {
-        GLuint vertex_shader;
-        GLuint geometry_shader;
-        GLuint fragment_shader;
-        GLuint program;
+        GLuint vertex_shader, geometry_shader, fragment_shader;
 
-        //Load shader sources
-        //const GLchar* fragment_shader_source = loadShader((char*)"res/fragment.shader").c_str();
-        //const GLchar* vertex_shader_source = loadShader((char*)"res/vertex.shader").c_str();
 
-        // Create and compile vertex shader
+        // Default program
         vertex_shader = glCreateShader(GL_VERTEX_SHADER);
-        glShaderSource(vertex_shader, 1, vertex_shader_source, NULL);
+        glShaderSource(vertex_shader, 1, default_vertex, NULL);
         glCompileShader(vertex_shader);
-        // Create and compile geometry shader
         geometry_shader = glCreateShader(GL_GEOMETRY_SHADER);
-        glShaderSource(geometry_shader, 1, geometry_shader_source, NULL);
-        glCompileShader(geometry_shader);        
-        // Create and compile fragment shader
+        glShaderSource(geometry_shader, 1, default_geometry, NULL);
+        glCompileShader(geometry_shader);
         fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
-        glShaderSource(fragment_shader, 1, fragment_shader_source, NULL);
+        glShaderSource(fragment_shader, 1, default_fragment, NULL);
         glCompileShader(fragment_shader);
-        // Create program, attach shaders to it, and link it
-        program = glCreateProgram();
-        glAttachShader(program, vertex_shader);
-        glAttachShader(program, geometry_shader);
-        glAttachShader(program, fragment_shader);
-
-
-        glLinkProgram(program);
-        // Delete the shaders as the program has them now
+        default_program = glCreateProgram();
+        glAttachShader(default_program, vertex_shader);
+        glAttachShader(default_program, geometry_shader);
+        glAttachShader(default_program, fragment_shader);
+        glLinkProgram(default_program);
         glDeleteShader(vertex_shader);
         glDeleteShader(geometry_shader);
         glDeleteShader(fragment_shader);
 
-        return program;
+
+
+        // Dots program
+        vertex_shader = glCreateShader(GL_VERTEX_SHADER);
+        glShaderSource(vertex_shader, 1, dots_vertex, NULL);
+        glCompileShader(vertex_shader);
+        geometry_shader = glCreateShader(GL_GEOMETRY_SHADER);
+        glShaderSource(geometry_shader, 1, dots_geometry, NULL);
+        glCompileShader(geometry_shader);
+        fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
+        glShaderSource(fragment_shader, 1, dots_fragment, NULL);
+        glCompileShader(fragment_shader);
+        dots_program = glCreateProgram();
+        glAttachShader(dots_program, vertex_shader);
+        glAttachShader(dots_program, geometry_shader);
+        glAttachShader(dots_program, fragment_shader);
+        glLinkProgram(dots_program);
+        glDeleteShader(vertex_shader);
+        glDeleteShader(geometry_shader);
+        glDeleteShader(fragment_shader);
+
 }
 
 
@@ -216,7 +229,7 @@ void Render::enableAtrib()
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
-void Render::diableAtrib()
+void Render::disableAtrib()
 {
     glDisableVertexAttribArray(0);
     glDisableVertexAttribArray(1);
@@ -226,4 +239,37 @@ void Render::diableAtrib()
 
     glBindVertexArray(0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
+}
+
+
+
+bool Render::setTexture(char* file)
+{
+
+    bool aux = false;
+    if(false)
+    {
+        int sizeX = 512;
+        int sizeY = 512;   
+        //generate an OpenGL texture object.
+        glGenTextures(1, &texture);
+
+        //binding texture in a 2d
+        glBindTexture(GL_TEXTURE_2D, texture);
+
+        // glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA,img_data.GetWidth(), img_data.GetHeight(),0,GL_RGBA, GL_UNSIGNED_BYTE, img_data.GetPixelsPtr());
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, (GLsizei)sizeX, (GLsizei)sizeY, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+        //Set all the parameters of the texture
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+
+        //Tell gl to use this texture
+        glBindTexture(GL_TEXTURE_2D, texture);
+
+        aux = true;
+    }
+    return aux;
 }

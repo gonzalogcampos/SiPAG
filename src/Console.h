@@ -9,3 +9,4 @@ void cPrint(std::string text, int priority = 1);
 
 std::string cString(float n);
 std::string cString(int n);
+std::string cString(size_t n);

@@ -30,3 +30,10 @@ std::string cString( int n )
     ss << n;
     return ss.str();
 }
+
+std::string cString( size_t n )
+{
+    std::ostringstream ss;
+    ss << n;
+    return ss.str();
+}
