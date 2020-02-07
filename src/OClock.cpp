@@ -21,7 +21,10 @@ float OClock::step()
     elapsedTime = currentTime - lastTime;
     lastTime = currentTime;
     fps = 1/elapsedTime.count();
-    cPrint("FPS: " + cString(fps) + "\n", 3);
+    cPrint("FPS: " + cString(fps) + "\n", 2);
+    if(elapsedTime.count()>1.f/30)
+        return 1.f/30;
+
     return elapsedTime.count();
 }
 
