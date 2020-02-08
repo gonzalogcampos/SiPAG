@@ -10,12 +10,12 @@ void OClock::start()
     lastTime = std::chrono::high_resolution_clock::now();
 };
 
-float OClock::getElapsedTime()
+double OClock::getElapsedTime()
 {
     return elapsedTime.count();
 };
 
-float OClock::step()
+double OClock::step()
 {
     std::chrono::time_point<std::chrono::high_resolution_clock> currentTime = std::chrono::high_resolution_clock::now();
     elapsedTime = currentTime - lastTime;

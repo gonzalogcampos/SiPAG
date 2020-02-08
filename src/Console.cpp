@@ -24,6 +24,13 @@ std::string cString( float n )
     return ss.str();
 }
 
+std::string cString( double n )
+{
+    std::ostringstream ss;
+    ss << n;
+    return ss.str();
+}
+
 std::string cString( int n )
 {
     std::ostringstream ss;

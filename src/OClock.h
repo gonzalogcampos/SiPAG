@@ -13,8 +13,8 @@ class OClock
         float fps;
     public:
         float getFPS(){return fps;}
-        float getElapsedTime();
+        double getElapsedTime();
         bool canContinue();
         void start();
-        float step();
+        double step();
 };

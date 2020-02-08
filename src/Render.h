@@ -35,7 +35,7 @@ class Render
         GLuint default_program, dots_program;
 
         //Buffers
-        GLuint bufferX, bufferY, bufferZ, bufferLT, bufferLR;
+        GLuint bufferX, bufferY, bufferZ, bufferVX, bufferVY, bufferVZ, bufferLT, bufferLR;
 
         GLuint texture;
 };

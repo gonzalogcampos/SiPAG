@@ -16,6 +16,8 @@ namespace values
 
         const int sys_FPS = 60;
 
+        const bool sys_Double = false;
+
         const unsigned int render_program = 1; //0=default 1=dots
 
 
@@ -27,7 +29,7 @@ namespace values
         const float e_Radious = 1.f;                        //Emitter radious
         const unsigned int e_ParticlesSecond = 2;           //Not used
         const unsigned int e_EmissionFrec = 100;            //In 1/1000
-        const unsigned int e_MaxParticles = 25000;           //Max Particles
+        const unsigned int e_MaxParticles = 2500;           //Max Particles
 
             /*
             *

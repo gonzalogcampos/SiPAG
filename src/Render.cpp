@@ -51,7 +51,7 @@ void Render::start()
     createBuffers();
 
     //Send buffers to CUDA
-    CudaControler::getInstance()->conectBuffers(bufferX, bufferY, bufferZ, bufferLT, bufferLR);
+    CudaControler::getInstance()->conectBuffers(bufferX, bufferY, bufferZ, bufferVX, bufferVY, bufferVZ, bufferLT, bufferLR);
 }
 
 void Render::draw()
@@ -94,6 +94,9 @@ void Render::close()
     glDeleteBuffers(1, &bufferX);
     glDeleteBuffers(1, &bufferY);
     glDeleteBuffers(1, &bufferZ);
+    glDeleteBuffers(1, &bufferVX);
+    glDeleteBuffers(1, &bufferVY);
+    glDeleteBuffers(1, &bufferVZ);
     glDeleteBuffers(1, &bufferLT);
     glDeleteBuffers(1, &bufferLR);
 
@@ -102,7 +105,15 @@ void Render::close()
 
 void Render::createBuffers()
 {
-    size_t bytes = values::e_MaxParticles*sizeof(float);
+    size_t bytes;
+
+    if(values::sys_Double)
+    {
+        bytes = values::e_MaxParticles*sizeof(double);
+    }else
+    {
+        bytes = values::e_MaxParticles*sizeof(float);
+    }
     
 
     glGenBuffers(1, &bufferX);
@@ -116,6 +127,19 @@ void Render::createBuffers()
 
     glGenBuffers(1, &bufferZ);
     glBindBuffer(GL_ARRAY_BUFFER, bufferZ);
+    glBufferData(GL_ARRAY_BUFFER, bytes, NULL, GL_DYNAMIC_DRAW);
+
+    glGenBuffers(1, &bufferVX);
+    glBindBuffer(GL_ARRAY_BUFFER, bufferVX);
+    glBufferData(GL_ARRAY_BUFFER, bytes, NULL, GL_DYNAMIC_DRAW);
+
+
+    glGenBuffers(1, &bufferVY);
+    glBindBuffer(GL_ARRAY_BUFFER, bufferVY);
+    glBufferData(GL_ARRAY_BUFFER, bytes, NULL, GL_DYNAMIC_DRAW);
+
+    glGenBuffers(1, &bufferVZ);
+    glBindBuffer(GL_ARRAY_BUFFER, bufferVZ);
     glBufferData(GL_ARRAY_BUFFER, bytes, NULL, GL_DYNAMIC_DRAW);
 
     glGenBuffers(1, &bufferLT);
@@ -206,25 +230,29 @@ std::string Render::loadShader(char* path)
 
 void Render::enableAtrib()
 {
+    GLenum type = GL_FLOAT;
+    if(values::sys_Double)
+        type = GL_DOUBLE;
+    
     glBindBuffer(GL_ARRAY_BUFFER, bufferX);
     glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 1, GL_FLOAT, GL_FALSE, 0, (GLubyte *)NULL);
+    glVertexAttribPointer(0, 1, type, GL_FALSE, 0, (GLubyte *)NULL);
 
     glBindBuffer(GL_ARRAY_BUFFER, bufferY);
     glEnableVertexAttribArray(1);
-    glVertexAttribPointer(1, 1, GL_FLOAT, GL_FALSE, 0, (GLubyte *)NULL);
+    glVertexAttribPointer(1, 1, type, GL_FALSE, 0, (GLubyte *)NULL);
 
     glBindBuffer(GL_ARRAY_BUFFER, bufferZ);
     glEnableVertexAttribArray(2);
-    glVertexAttribPointer(2, 1, GL_FLOAT, GL_FALSE, 0, (GLubyte *)NULL);
+    glVertexAttribPointer(2, 1, type, GL_FALSE, 0, (GLubyte *)NULL);
 
     glBindBuffer(GL_ARRAY_BUFFER, bufferLT);
     glEnableVertexAttribArray(3);
-    glVertexAttribPointer(3, 1, GL_FLOAT, GL_FALSE, 0, (GLubyte *)NULL);
+    glVertexAttribPointer(3, 1, type, GL_FALSE, 0, (GLubyte *)NULL);
 
     glBindBuffer(GL_ARRAY_BUFFER, bufferLR);
     glEnableVertexAttribArray(4);
-    glVertexAttribPointer(4, 1, GL_FLOAT, GL_FALSE, 0, (GLubyte *)NULL);
+    glVertexAttribPointer(4, 1, type, GL_FALSE, 0, (GLubyte *)NULL);
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
