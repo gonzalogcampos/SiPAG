@@ -18,7 +18,7 @@ namespace values
 
         const bool sys_Double = false;
 
-        const unsigned int render_program = 1; //0=default 1=dots
+        const unsigned int render_program = 0; //0=default 1=dots
 
 
             /*

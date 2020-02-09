@@ -24,6 +24,7 @@
                 "-lfreeglut" , 
                 "-lglu32", 
                 "-lopengl32",
+                "-lSOIL"
                 //"-lglui32"
                 //"-lntdll",
                 //"-lshell32"
@@ -58,6 +59,7 @@
                 //"-lgdi32",  
                 //"-luser32", 
                 "-Llib/GL", 
+                "-lSOIL",
                 "-lglew32", 
                 "-lfreeglut" , 
                 "-lglu32", 

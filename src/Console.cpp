@@ -44,3 +44,8 @@ std::string cString( size_t n )
     ss << n;
     return ss.str();
 }
+
+std::string cString( char* n )
+{
+    return (char*)n;
+}

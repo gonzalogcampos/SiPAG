@@ -14,6 +14,7 @@
 #include <shaders/dots_geometry.h>
 #include <shaders/dots_vertex.h>
 #include <iostream>
+#include <SOIL.h>
 
 
 //OPENGL ERROR CALLBACK
@@ -52,6 +53,9 @@ void Render::start()
 
     //Send buffers to CUDA
     CudaControler::getInstance()->conectBuffers(bufferX, bufferY, bufferZ, bufferVX, bufferVY, bufferVZ, bufferLT, bufferLR);
+
+
+    setTexture((char*)"res/text.png");
 }
 
 void Render::draw()
@@ -273,27 +277,10 @@ void Render::disableAtrib()
 
 bool Render::setTexture(char* file)
 {
-
+    texture = SOIL_load_OGL_texture(file, 0, texture, SOIL_FLAG_MULTIPLY_ALPHA);
     bool aux = false;
     if(false)
     {
-        int sizeX = 512;
-        int sizeY = 512;   
-        //generate an OpenGL texture object.
-        glGenTextures(1, &texture);
-
-        //binding texture in a 2d
-        glBindTexture(GL_TEXTURE_2D, texture);
-
-        // glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA,img_data.GetWidth(), img_data.GetHeight(),0,GL_RGBA, GL_UNSIGNED_BYTE, img_data.GetPixelsPtr());
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, (GLsizei)sizeX, (GLsizei)sizeY, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
-        //Set all the parameters of the texture
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-
-
         //Tell gl to use this texture
         glBindTexture(GL_TEXTURE_2D, texture);
 
