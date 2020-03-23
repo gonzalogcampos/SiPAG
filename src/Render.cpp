@@ -275,20 +275,13 @@ void Render::disableAtrib()
 
 
 
-bool Render::setTexture(char* file)
+void Render::setTexture(char* file)
 {
     texture = SOIL_load_OGL_texture(file, 0, texture, SOIL_FLAG_MULTIPLY_ALPHA);
-    bool aux = false;
-    if(false)
-    {
-        //Tell gl to use this texture
-        glBindTexture(GL_TEXTURE_2D, texture);
 
-        aux = true;
-    }
+    if(texture == 0)
+        cPrint("Error loading " + cString(file) + "\n", 2);
 
-    // Enable blending
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    return aux;
 }

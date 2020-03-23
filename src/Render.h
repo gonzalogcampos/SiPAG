@@ -27,7 +27,7 @@ class Render
         void createBuffers();
         void enableAtrib();
         void disableAtrib();
-        bool setTexture(char* file);
+        void setTexture(char* file);
 
 
 

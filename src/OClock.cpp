@@ -27,20 +27,3 @@ double OClock::step()
 
     return elapsedTime.count();
 }
-
-bool OClock::canContinue()
-{
-    /*
-    std::chrono::time_point<std::chrono::high_resolution_clock> currentTime = std::chrono::high_resolution_clock::now();
-
-    elapsedTime = currentTime - lastTime;
-
-    double minTime = 1.0/values::sys_FPS;
-    if(elapsedTime.count() > minTime)
-    {
-        lastTime = currentTime;
-        return true;
-    }
-    */
-    return false;
-}

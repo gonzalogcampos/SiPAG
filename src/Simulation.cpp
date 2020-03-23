@@ -7,16 +7,17 @@
 #include <CudaControler.h>
 #include <Render.h>
 #include <OClock.h>
+#include <GUI.h>
 #include <GL/freeglut.h>
 #include <Values.h>
 
-//#include <GL/glui.h>
+
 
 CudaControler *cudaControler;
 Render *render;
 OClock oclock;
+GUI gui;
 int window;
-//GLUI *subwindow;
 
 
 int start(int argv, char **argc)
@@ -41,7 +42,7 @@ int start(int argv, char **argc)
 
     std::string title = "SiPAG | " + cudaControler->getDevice();
   	window = glutCreateWindow(title.c_str());
-
+    glutDisplayFunc(step);
 
     //Calculate needed memory on device
     int particles_bytes = values::e_MaxParticles * 8 * 4;
@@ -56,7 +57,6 @@ int start(int argv, char **argc)
     oclock.start();
     render->start();
 
-    glutDisplayFunc(step);
 
 
     glutMainLoop();
@@ -82,6 +82,6 @@ void close(void)
 
 int createMenu()
 {
-    //subwindow = GLUI_Master.create_glui_subwindow (window, GLUI_SUBWINDOW_LEFT);
+    gui.init();
     return 0;
 }
