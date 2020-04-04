@@ -43,6 +43,7 @@ int start(int argv, char **argc)
     std::string title = "SiPAG | " + cudaControler->getDevice();
   	window = glutCreateWindow(title.c_str());
     glutDisplayFunc(step);
+    glutKeyboardFunc(processNormalKeys);
 
     //Calculate needed memory on device
     int particles_bytes = values::e_MaxParticles * 8 * 4;
@@ -67,8 +68,9 @@ int start(int argv, char **argc)
 
 void step(void)
 {
-    cudaControler->step(oclock.step());
-    render->draw();
+    double dt = oclock.step();
+    cudaControler->step(dt);
+    render->draw(dt);
 
     glutSwapBuffers();
     glutPostRedisplay();
@@ -84,4 +86,35 @@ int createMenu()
 {
     gui.init();
     return 0;
+}
+
+
+void processNormalKeys(unsigned char key, int x, int y)
+{
+    switch(key)
+    {
+        case 'w':
+            Render::getInstance()->moveCamera(Render::Direction::FRONT);
+            break;
+        case 's':
+            Render::getInstance()->moveCamera(Render::Direction::BACK);
+            break;
+        case 'a':
+            Render::getInstance()->moveCamera(Render::Direction::LEFT);
+            break;
+        case 'd':
+            Render::getInstance()->moveCamera(Render::Direction::RIGHT);
+            break;
+        case 'r':
+            Render::getInstance()->moveCamera(Render::Direction::UP);
+            break;
+        case 'f':
+            Render::getInstance()->moveCamera(Render::Direction::DOWN);
+            break;
+        case 'q':
+            Render::getInstance()->changeShader();
+            break;
+    }
+
+
 }

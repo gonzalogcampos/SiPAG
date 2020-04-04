@@ -13,3 +13,5 @@ void subStep(void);
 void close();
 
 int createMenu();
+
+void processNormalKeys(unsigned char key, int x, int y);

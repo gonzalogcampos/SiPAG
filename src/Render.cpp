@@ -16,6 +16,10 @@
 #include <iostream>
 #include <SOIL.h>
 
+#include <GL/glm/gtc/matrix_transform.hpp>
+#include <GL/glm/gtc/type_ptr.hpp>
+
+const float CameraVelocity = 10.f;
 
 //OPENGL ERROR CALLBACK
 void GLAPIENTRY
@@ -58,13 +62,17 @@ void Render::start()
     setTexture((char*)"res/text.png");
 }
 
-void Render::draw()
+void Render::draw(float dt)
 {
+    time += dt;
+    this->dt = dt;
+
 	// Clear the screen
     const GLfloat color[] = { 0.0f, 0.f, 0.0f, 1.0f };
     glClearBufferfv(GL_COLOR, 0, color);
 
     // Select rendering program
+    /*
     switch(values::render_program)
     {
         case 0:
@@ -77,9 +85,13 @@ void Render::draw()
             glUseProgram(default_program);
             break;
     }
+    */
 
     //Enable buffers
     enableAtrib();
+
+    //Uniform values
+    paseUniforms();
 
     //Draw particles
     glDrawArrays(GL_POINTS, 0, values::e_MaxParticles);
@@ -182,6 +194,8 @@ void Render::compileShaders()
         glDeleteShader(geometry_shader);
         glDeleteShader(fragment_shader);
 
+        defaultVP  = glGetUniformLocation(default_program, "VP");
+
 
 
         // Dots program
@@ -203,6 +217,10 @@ void Render::compileShaders()
         glDeleteShader(geometry_shader);
         glDeleteShader(fragment_shader);
 
+
+        dotsVP  = glGetUniformLocation(default_program, "VP");
+
+        glUseProgram(default_program);
 }
 
 
@@ -284,4 +302,69 @@ void Render::setTexture(char* file)
 
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+}
+
+
+void Render::paseUniforms()
+{
+    //VP MATRIX
+
+    const float radius = camD;
+    float camX = sin(camR) * radius;
+    float camZ = cos(camR) * radius;
+
+    glm::mat4 V = glm::lookAt(glm::vec3(camX, camH, camZ), glm::vec3(0.f, camH, 0.f), glm::vec3(0.0, 1.0, 0.0));
+    glm::mat4 P = glm::perspective(0.8f, 4.0f / 3.0f, 0.1f, 100.0f);
+    glm::mat4 VP = P * V;
+
+
+    glUniformMatrix4fv( defaultVP, 1, GL_FALSE, glm::value_ptr( VP ) );
+    glUniformMatrix4fv( dotsVP, 1, GL_FALSE, glm::value_ptr( VP ) );
+}
+
+
+ void Render::moveCamera(Direction dir)
+ {
+     switch (dir)
+     {
+        case UP:
+            camH -= CameraVelocity*dt;
+            break;
+        case DOWN:
+            camH += CameraVelocity*dt;
+            break;
+        case FRONT:
+            camD -= CameraVelocity*dt;
+            if(camD<.5)
+                camD = .5;
+            break;
+        case BACK:
+            camD += CameraVelocity*dt;
+            if(camD<.5)
+                camD = .5;
+            break;
+        case LEFT:
+            camR -= CameraVelocity*dt;
+            break;
+        case RIGHT:
+            camR -= CameraVelocity*dt;
+            break;
+     
+     default:
+         break;
+     }
+ }
+
+void Render::changeShader()
+{
+    if(defaultShader)
+    {
+        defaultShader = false;
+        glUseProgram(dots_program);
+    }else
+    {
+        defaultShader = true;
+        glUseProgram(default_program);
+    }
+    
 }
