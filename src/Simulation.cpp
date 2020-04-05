@@ -8,10 +8,13 @@
 #include <Render.h>
 #include <OClock.h>
 #include <GUI.h>
-#include <GL/freeglut.h>
+//#include <GL/freeglut.h>
 #include <Values.h>
 
-
+#include <GL/glfw3.h>
+#if defined(_MSC_VER) && (_MSC_VER >= 1900) && !defined(IMGUI_DISABLE_WIN32_FUNCTIONS)
+#pragma comment(lib, "legacy_stdio_definitions")
+#endif
 
 CudaControler *cudaControler;
 Render *render;
@@ -34,16 +37,17 @@ int start(int argv, char **argc)
         return 1;
     }
 
-	glutInit(&argv, argc);
-	glutInitWindowSize(720, 720);
-    glutInitDisplayMode(GLUT_RGB | GLUT_STENCIL | GLUT_DOUBLE | GLUT_DEPTH);
-    glutSetOption(GLUT_ACTION_ON_WINDOW_CLOSE, GLUT_ACTION_CONTINUE_EXECUTION);
 
+    if (!glfwInit())
+        return 1;
 
     std::string title = "SiPAG | " + cudaControler->getDevice();
-  	window = glutCreateWindow(title.c_str());
-    glutDisplayFunc(step);
-    glutKeyboardFunc(processNormalKeys);
+    GLFWwindow* window;
+	window = glfwCreateWindow(720, 720, title.c_str(), NULL, NULL);
+	if (!window) exit(EXIT_FAILURE);
+
+	glfwMakeContextCurrent(window);
+	glfwSwapInterval(1);
 
     //Calculate needed memory on device
     int particles_bytes = values::e_MaxParticles * 8 * 4;
@@ -59,8 +63,11 @@ int start(int argv, char **argc)
     render->start();
 
 
-
-    glutMainLoop();
+    while (!glfwWindowShouldClose(window)) {
+        step();
+        glfwPollEvents();
+	    glfwSwapBuffers(window);
+	}
 
 
     return 0;
@@ -71,9 +78,6 @@ void step(void)
     double dt = oclock.step();
     cudaControler->step(dt);
     render->draw(dt);
-
-    glutSwapBuffers();
-    glutPostRedisplay();
 }
 
 void close(void)
