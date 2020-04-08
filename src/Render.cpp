@@ -71,22 +71,6 @@ void Render::draw(float dt)
     const GLfloat color[] = { 0.0f, 0.f, 0.0f, 1.0f };
     glClearBufferfv(GL_COLOR, 0, color);
 
-    // Select rendering program
-    /*
-    switch(values::render_program)
-    {
-        case 0:
-            glUseProgram(default_program);
-            break;
-        case 1:
-            glUseProgram(dots_program);
-            break;
-        default:
-            glUseProgram(default_program);
-            break;
-    }
-    */
-
     //Enable buffers
     enableAtrib();
 

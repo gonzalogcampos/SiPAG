@@ -55,18 +55,28 @@ int start(int argv, char **argc)
     int bytes = particles_bytes + perlin_bytes;
     cPrint("Memory allocated in device: " + cString(bytes/1048576) + " Mb\n", 2);
 
-    if(createMenu()!=0)
-        return 1;
+
     
     cudaControler->start();
     oclock.start();
     render->start();
 
+    if(createMenu()!=0)
+        return 1;
+
+	glfwMakeContextCurrent(window);
 
     while (!glfwWindowShouldClose(window)) {
+        
         step();
         glfwPollEvents();
+
+	    gui.update();
+        
+        glfwMakeContextCurrent(window);
+
 	    glfwSwapBuffers(window);
+
 	}
 
 
@@ -84,6 +94,7 @@ void close(void)
 {
     cudaControler->close();
     render->close();
+    gui.close();
 }
 
 int createMenu()
