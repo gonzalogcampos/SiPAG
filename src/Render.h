@@ -19,7 +19,6 @@ class Render
         void changeShader();
         void start();
         void draw(float dt);
-        void clearWindow();
 
         void close();
 
