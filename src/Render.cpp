@@ -23,8 +23,8 @@ const float CameraVelocity = 10.f;
 
 
 float c_Rotation = 0.f;
-float c_Distance = 5.f;
-float c_Height = 0.f;
+float c_Distance = 10.f;
+float c_Height = 4.f;
 
 
 //OPENGL ERROR CALLBACK
@@ -84,7 +84,7 @@ void Render::draw(float dt)
     paseUniforms();
 
     //Draw particles
-    glDrawArrays(GL_POINTS, 0, values::e_MaxParticles);
+    glDrawArrays(GL_POINTS, 0, e_MaxParticles);
 
     //Disable buffers
     disableAtrib();
@@ -96,15 +96,7 @@ void Render::close()
     glDeleteProgram(dots_program);
     glDeleteProgram(default_program);
 
-    //Delete buffers
-    glDeleteBuffers(1, &bufferX);
-    glDeleteBuffers(1, &bufferY);
-    glDeleteBuffers(1, &bufferZ);
-    glDeleteBuffers(1, &bufferVX);
-    glDeleteBuffers(1, &bufferVY);
-    glDeleteBuffers(1, &bufferVZ);
-    glDeleteBuffers(1, &bufferLT);
-    glDeleteBuffers(1, &bufferLR);
+    deleteBuffers();
 
 }
 
@@ -113,14 +105,8 @@ void Render::createBuffers()
 {
     size_t bytes;
 
-    if(values::sys_Double)
-    {
-        bytes = values::e_MaxParticles*sizeof(double);
-    }else
-    {
-        bytes = values::e_MaxParticles*sizeof(float);
-    }
-    
+
+    bytes = e_MaxParticles*sizeof(float);
 
     glGenBuffers(1, &bufferX);
     glBindBuffer(GL_ARRAY_BUFFER, bufferX);
@@ -157,6 +143,19 @@ void Render::createBuffers()
     glBufferData(GL_ARRAY_BUFFER, bytes, NULL, GL_DYNAMIC_DRAW);
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
+}
+
+void Render::deleteBuffers()
+{
+    //Delete buffers
+    glDeleteBuffers(1, &bufferX);
+    glDeleteBuffers(1, &bufferY);
+    glDeleteBuffers(1, &bufferZ);
+    glDeleteBuffers(1, &bufferVX);
+    glDeleteBuffers(1, &bufferVY);
+    glDeleteBuffers(1, &bufferVZ);
+    glDeleteBuffers(1, &bufferLT);
+    glDeleteBuffers(1, &bufferLR);
 }
 
 
@@ -214,7 +213,12 @@ void Render::compileShaders()
 }
 
 
-
+void Render::resize()
+{
+    deleteBuffers();
+    createBuffers();
+    CudaControler::getInstance()->conectBuffers(bufferX, bufferY, bufferZ, bufferVX, bufferVY, bufferVZ, bufferLT, bufferLR);
+}
 
 std::string Render::loadShader(char* path)
 {
@@ -243,8 +247,6 @@ std::string Render::loadShader(char* path)
 void Render::enableAtrib()
 {
     GLenum type = GL_FLOAT;
-    if(values::sys_Double)
-        type = GL_DOUBLE;
     
     glBindBuffer(GL_ARRAY_BUFFER, bufferX);
     glEnableVertexAttribArray(0);

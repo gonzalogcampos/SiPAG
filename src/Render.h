@@ -18,6 +18,7 @@ class Render
         void start();
         void draw(float dt);
         void close();
+        void resize();
 
     private:
         Render(){}
@@ -25,6 +26,8 @@ class Render
         std::string loadShader(char* path);
         void compileShaders();
         void createBuffers();
+        void deleteBuffers();
+        void changeSize();
         void enableAtrib();
         void disableAtrib();
         void setTexture(char* file);

@@ -21,6 +21,35 @@
 #include <Values.h>
 #include <Console.h>
 
+
+/*===============================================================*/
+/*======================    VALUES    ===========================*/
+/*===============================================================*/
+//EMITTER
+float e_Radious = 1.f;                        //Emitter radious
+unsigned int e_EmissionFrec = 100;            //In 1/1000
+unsigned int e_MaxParticles = 30000;           //Max Particles
+//PARTICLES
+float p_LifeTime = 2.f;                       //Life of the particle in seconds
+float p_RLifeTime = 0.2f;                     //% of random in life
+float p_Size = 1.f;                           //Size of the particle
+float p_SizeEvolution = .05f;                 //%per second size improves
+float p_Opacity = 1.f;                        //Opacity of the particle
+float p_OpacityEvolution = .05f;              //% per second opacity decays
+float p_InitVelocityX = 0.0f;                 //X init velocity
+float p_InitVelocityY = 0.0f;                 //Y init velocity
+float p_InitVelocityZ = 0.0f;                 //Z init velocity
+float p_RInitVelocityX = 0.5f;                //X random in init velocity
+float p_RInitVelocityY = 0.5f;                //Y random in init velocity
+float p_RInitVelocityZ = 0.5f;                //Z random in init velocity
+float p_VelocityDecay = .3f;                  //% per second velocity decays
+/*===============================================================*/
+/*===============================================================*/
+
+
+
+
+
 enum Data
 {
 	PARTICLE_X,
@@ -91,7 +120,7 @@ __global__ void kernelParticle(float *x, float *y, float *z,
 
 				r=curand(&state[id])%1000;
 				lt[id] = 0.f;
-				lr[id] = d_life[0] - d_life[0]*d_rLife[0] + 2*d_life[0]*d_rLife[0]*r/1000.f;
+				lr[id] = d_life[0] + d_rLife[0]*(0.5*(r/1000.f));
 			}
 		}else
 		{
@@ -197,9 +226,7 @@ void CudaControler::start()
 {
 
 	// Size, in bytes, of Particles vector host
-	size_t bytes = values::e_MaxParticles*sizeof(float);
-	if(values::sys_Double)
-		bytes = values::e_MaxParticles*sizeof(double);
+	size_t bytes = e_MaxParticles*sizeof(float);
 
 	//Allocate memory for resource vector in host
 	h_resource = (float*)malloc(bytes);
@@ -207,8 +234,6 @@ void CudaControler::start()
 
 	// Size, in bytes, of each 3D perlin matrix in device
 	bytes = values::g_Size*values::g_Size*values::g_Size*sizeof(float);
-	if(values::sys_Double)
-		bytes = values::g_Size*values::g_Size*values::g_Size*sizeof(double);
 
 	//Allocate memory for perlin noise grids in device
 	cudaSafeCall(cudaMalloc(&d_perlin_x, bytes));
@@ -220,15 +245,9 @@ void CudaControler::start()
 	perlin_blockSize = values::cu_BlockSize;
 
 	// Number of blocks in grid
-	if(values::sys_Double)
-	{
-		particles_gridSize = (int)ceil((double)values::e_MaxParticles/particles_blockSize);
-		perlin_gridSize = (int)ceil((double)(values::g_Size*values::g_Size*values::g_Size)/perlin_blockSize);
-	}else
-	{
-		particles_gridSize = (int)ceil((float)values::e_MaxParticles/particles_blockSize);
-		perlin_gridSize = (int)ceil((float)(values::g_Size*values::g_Size*values::g_Size)/perlin_blockSize);	
-	}
+	particles_gridSize = (int)ceil((float)e_MaxParticles/particles_blockSize);
+	perlin_gridSize = (int)ceil((float)(values::g_Size*values::g_Size*values::g_Size)/perlin_blockSize);	
+	
 
 	//calculatePerlin();
 
@@ -250,7 +269,7 @@ void CudaControler::step(double dt)
 	copyConstants();
 
 	//Maping the OpenGL buffers for CUDA
-	size_t bytes = values::e_MaxParticles*sizeof(float);
+	size_t bytes = e_MaxParticles*sizeof(float);
 
 	cudaSafeCall( cudaGraphicsMapResources(1, &resource_x) );
 	cudaSafeCall( cudaGraphicsMapResources(1, &resource_y) );
@@ -272,7 +291,7 @@ void CudaControler::step(double dt)
 	//Execute Kernel
 	//Random device States
 	curandState* devStates;
-	cudaMalloc ( &devStates, values::e_MaxParticles*sizeof( curandState ) );
+	cudaMalloc ( &devStates, e_MaxParticles*sizeof( curandState ) );
 	
 	setupRandomParticle<<<particles_gridSize, particles_blockSize>>> ( devStates, rand()%10000);
 
@@ -301,6 +320,19 @@ void CudaControler::step(double dt)
 	cudaGraphicsUnmapResources(1, &resource_lr);
 }
 
+void CudaControler::resize()
+{
+	free(h_resource);
+
+	// Number of blocks in grid
+	particles_gridSize = (int)ceil((float)e_MaxParticles/particles_blockSize);
+
+	// Size, in bytes, of Particles vector host
+	size_t bytes = e_MaxParticles*sizeof(float);
+
+	//Allocate memory for resource vector in host
+	h_resource = (float*)malloc(bytes);
+}
 void CudaControler::conectBuffers(unsigned int bufferX,unsigned int bufferY, unsigned int bufferZ,
 									unsigned int bufferVX,unsigned int bufferVY, unsigned int bufferVZ, 
 									unsigned int bufferLT, unsigned int bufferLR)
@@ -313,17 +345,6 @@ void CudaControler::conectBuffers(unsigned int bufferX,unsigned int bufferY, uns
 	cudaSafeCall( cudaGraphicsGLRegisterBuffer(&resource_vz, (GLuint)bufferVZ, cudaGraphicsRegisterFlagsNone) );
 	cudaSafeCall( cudaGraphicsGLRegisterBuffer(&resource_lt, (GLuint)bufferLT, cudaGraphicsRegisterFlagsNone) );
 	cudaSafeCall( cudaGraphicsGLRegisterBuffer(&resource_lr, (GLuint)bufferLR, cudaGraphicsRegisterFlagsNone) );
-
-	/*Unecesary
-	// Initialize vectors on host
-	for (size_t i = 0; i< sizeof(h_resource)/sizeof(*h_resource); i++)
-		h_resource[i] = -1.f;
-
-	// Copy host vectors to device
-	size_t bytes = values::e_MaxParticles*sizeof(float);
-	cudaMemcpy( d_lr_s, h_resource, bytes, cudaMemcpyHostToDevice);
-	*/
-
 }
 
 
@@ -337,9 +358,7 @@ void CudaControler::cudaSafeCall(cudaError err){
 
 void CudaControler::printData(Data d)
 {
-	size_t bytes = values::e_MaxParticles*sizeof(float);
-	if(values::sys_Double)
-		bytes = values::e_MaxParticles*sizeof(double);
+	size_t bytes = e_MaxParticles*sizeof(float);
 
 	cPrint("Cuda:   ", 2);
 
@@ -384,7 +403,7 @@ void CudaControler::printData(Data d)
 		break;
 	}
 
-	for(int i = 0; i<values::e_MaxParticles; i++)
+	for(int i = 0; i<e_MaxParticles; i++)
 	{
 		cPrint(cString(h_resource[i]) + " ", 2);
 	}
@@ -394,17 +413,17 @@ void CudaControler::printData(Data d)
 
 void CudaControler::copyConstants()
 {
-	cudaSafeCall(cudaMemcpyToSymbol(d_rLife, 			&(values::p_RLifeTime),			sizeof(const float)));
-	cudaSafeCall(cudaMemcpyToSymbol(d_life, 			&(values::p_LifeTime), 			sizeof(const float)));
-	cudaSafeCall(cudaMemcpyToSymbol(d_vDecay, 			&(values::p_VelocityDecay), 	sizeof(const float)));
-	cudaSafeCall(cudaMemcpyToSymbol(d_initVelocityX, 	&(values::p_InitVelocityX), 	sizeof(const float)));
-	cudaSafeCall(cudaMemcpyToSymbol(d_initVelocityY, 	&(values::p_InitVelocityY), 	sizeof(const float)));
-	cudaSafeCall(cudaMemcpyToSymbol(d_initVelocityZ, 	&(values::p_InitVelocityZ), 	sizeof(const float)));
-	cudaSafeCall(cudaMemcpyToSymbol(d_rInitVelocityX,	&(values::p_RInitVelocityX), 	sizeof(const float)));
-	cudaSafeCall(cudaMemcpyToSymbol(d_rInitVelocityY,	&(values::p_RInitVelocityY), 	sizeof(const float)));
-	cudaSafeCall(cudaMemcpyToSymbol(d_rInitVelocityZ,	&(values::p_RInitVelocityZ), 	sizeof(const float)));
-	cudaSafeCall(cudaMemcpyToSymbol(d_maxParticles, 	&(values::e_MaxParticles), 		sizeof(const unsigned int)));
-	cudaSafeCall(cudaMemcpyToSymbol(d_emitterFrec, 		&(values::e_EmissionFrec), 		sizeof(const unsigned int)));
+	cudaSafeCall(cudaMemcpyToSymbol(d_rLife, 			&(p_RLifeTime),			sizeof(const float)));
+	cudaSafeCall(cudaMemcpyToSymbol(d_life, 			&(p_LifeTime), 			sizeof(const float)));
+	cudaSafeCall(cudaMemcpyToSymbol(d_vDecay, 			&(p_VelocityDecay), 	sizeof(const float)));
+	cudaSafeCall(cudaMemcpyToSymbol(d_initVelocityX, 	&(p_InitVelocityX), 	sizeof(const float)));
+	cudaSafeCall(cudaMemcpyToSymbol(d_initVelocityY, 	&(p_InitVelocityY), 	sizeof(const float)));
+	cudaSafeCall(cudaMemcpyToSymbol(d_initVelocityZ, 	&(p_InitVelocityZ), 	sizeof(const float)));
+	cudaSafeCall(cudaMemcpyToSymbol(d_rInitVelocityX,	&(p_RInitVelocityX), 	sizeof(const float)));
+	cudaSafeCall(cudaMemcpyToSymbol(d_rInitVelocityY,	&(p_RInitVelocityY), 	sizeof(const float)));
+	cudaSafeCall(cudaMemcpyToSymbol(d_rInitVelocityZ,	&(p_RInitVelocityZ), 	sizeof(const float)));
+	cudaSafeCall(cudaMemcpyToSymbol(d_maxParticles, 	&(e_MaxParticles), 		sizeof(const unsigned int)));
+	cudaSafeCall(cudaMemcpyToSymbol(d_emitterFrec, 		&(e_EmissionFrec), 		sizeof(const unsigned int)));
 
 
 	cudaSafeCall(cudaMemcpyToSymbol(d_constantX,		&(values::w_ConstantX), 		sizeof(const float)));

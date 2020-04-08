@@ -19,6 +19,7 @@ class CudaControler
         void step(double dt);
         void start();
         void close();
+        void resize();
         int testDevices();
         void calculatePerlin();
         std::string getDevice();
