@@ -84,6 +84,12 @@ void Render::draw(float dt)
     disableAtrib();
 }
 
+void Render::clearWindow()
+{
+    
+}
+
+
 void Render::close()
 {
     //Delete programs
