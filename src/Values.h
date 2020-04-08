@@ -4,6 +4,16 @@
 
 #pragma once
 
+            /*
+            *
+            * -------- CAMERA --------
+            * 
+            */
+        extern float c_Rotation;
+        extern float c_Distance;
+        extern float c_Height;
+
+
 namespace values
 {
 
@@ -19,7 +29,6 @@ namespace values
         const bool sys_Double = false;
 
         const unsigned int render_program = 0; //0=default 1=dots
-
 
             /*
             *

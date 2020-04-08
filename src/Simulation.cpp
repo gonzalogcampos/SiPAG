@@ -105,7 +105,6 @@ void step(void)
     ImGui_ImplGlfw_NewFrame();
 	GUIupdate();
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-    render->clearWindow();
 }
 
 void close(void)
@@ -117,35 +116,4 @@ void close(void)
 int createMenu()
 {
     return 0;
-}
-
-
-void processNormalKeys(unsigned char key, int x, int y)
-{
-    switch(key)
-    {
-        case 'w':
-            Render::getInstance()->moveCamera(Render::Direction::FRONT);
-            break;
-        case 's':
-            Render::getInstance()->moveCamera(Render::Direction::BACK);
-            break;
-        case 'a':
-            Render::getInstance()->moveCamera(Render::Direction::LEFT);
-            break;
-        case 'd':
-            Render::getInstance()->moveCamera(Render::Direction::RIGHT);
-            break;
-        case 'r':
-            Render::getInstance()->moveCamera(Render::Direction::UP);
-            break;
-        case 'f':
-            Render::getInstance()->moveCamera(Render::Direction::DOWN);
-            break;
-        case 'q':
-            Render::getInstance()->changeShader();
-            break;
-    }
-
-
 }

@@ -21,6 +21,12 @@
 
 const float CameraVelocity = 10.f;
 
+
+float c_Rotation = 0.f;
+float c_Distance = 5.f;
+float c_Height = 0.f;
+
+
 //OPENGL ERROR CALLBACK
 void GLAPIENTRY
 MessageCallback( GLenum source,
@@ -292,12 +298,11 @@ void Render::setTexture(char* file)
 void Render::paseUniforms()
 {
     //VP MATRIX
-
     const float radius = camD;
-    float camX = sin(camR) * radius;
-    float camZ = cos(camR) * radius;
+    float camX = sin(c_Rotation) * c_Distance;
+    float camZ = cos(c_Rotation) * c_Distance;
 
-    glm::mat4 V = glm::lookAt(glm::vec3(camX, camH, camZ), glm::vec3(0.f, camH, 0.f), glm::vec3(0.0, 1.0, 0.0));
+    glm::mat4 V = glm::lookAt(glm::vec3(camX, c_Height, camZ), glm::vec3(0.f, c_Height, 0.f), glm::vec3(0.0, 1.0, 0.0));
     glm::mat4 P = glm::perspective(0.8f, 4.0f / 3.0f, 0.1f, 100.0f);
     glm::mat4 VP = P * V;
 
@@ -305,39 +310,6 @@ void Render::paseUniforms()
     glUniformMatrix4fv( defaultVP, 1, GL_FALSE, glm::value_ptr( VP ) );
     glUniformMatrix4fv( dotsVP, 1, GL_FALSE, glm::value_ptr( VP ) );
 }
-
-
- void Render::moveCamera(Direction dir)
- {
-     switch (dir)
-     {
-        case UP:
-            camH -= CameraVelocity*dt;
-            break;
-        case DOWN:
-            camH += CameraVelocity*dt;
-            break;
-        case FRONT:
-            camD -= CameraVelocity*dt;
-            if(camD<.5)
-                camD = .5;
-            break;
-        case BACK:
-            camD += CameraVelocity*dt;
-            if(camD<.5)
-                camD = .5;
-            break;
-        case LEFT:
-            camR -= CameraVelocity*dt;
-            break;
-        case RIGHT:
-            camR -= CameraVelocity*dt;
-            break;
-     
-     default:
-         break;
-     }
- }
 
 void Render::changeShader()
 {
