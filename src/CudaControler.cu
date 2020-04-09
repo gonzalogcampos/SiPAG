@@ -25,23 +25,21 @@
 /*===============================================================*/
 /*======================    VALUES    ===========================*/
 /*===============================================================*/
+//SYSTEM
+int cu_BlockSize = 1024;
 //EMITTER
-float e_Length = 1.f;                        //Emitter radious
+float e_Length = 1.f;                        	//Emitter radious
 int e_Type = 0;                        			//Emitter Type
-int e_EmissionFrec = 100;            //In 1/1000
-unsigned int e_MaxParticles = 30000;           //Max Particles
+int e_EmissionFrec = 100;            			//In 1/1000
+unsigned int e_MaxParticles = 30000;           	//Max Particles
 //PARTICLES
-float p_LifeTime = 2.f;                       //Life of the particle in seconds
-float p_RLifeTime = 0.2f;                     //% of random in life
-float p_Size = 1.f;                           //Size of the particle
-float p_SizeEvolution = .05f;                 //%per second size improves
-float p_Opacity = 1.f;                        //Opacity of the particle
-float p_OpacityEvolution = .05f;              //% per second opacity decays
+float p_LifeTime = 2.f;                       	//Life of the particle in seconds
+float p_RLifeTime = 0.2f;                     	//% of random in life
 
-float p_InitVelocity[3] = {0.0f, 0.0f, 0.0f};                 //Z init velocity
-float p_RInitVelocity[3] = {0.5f, 0.5f, 0.5f};                 //Z init velocity
+float p_InitVelocity[3] = {0.0f, 0.0f, 0.0f}; 	//Z init velocity
+float p_RInitVelocity[3] = {0.5f, 0.5f, 0.5f}; 	//Z init velocity
 
-float p_VelocityDecay = .3f;                  //% per second velocity decays
+float p_VelocityDecay = .3f;                  	//% per second velocity decays
 /*===============================================================*/
 /*===============================================================*/
 
@@ -110,18 +108,15 @@ __global__ void kernelParticle(float *x, float *y, float *z,
 				if(d_emitterType[0]==2)
 				{
 					r=curand(&state[id])%1000;
-					float u = (r/1000.f);
-					float v = (r/1000.f);
-					float theta = u * 2.0 * 3.14159265359;
-					float phi = acos(2.0 * v - 1.0) - (3.14159265359/2);
-					float r = d_emitterLength[0];
+					float theta =  (r/1000.f) * 2.0 * 3.14159265359;
+					float phi = acos(2.0 *  (r/1000.f) - 1.0) - (3.14159265359/2);
 					float sinTheta = sin(theta);
 					float cosTheta = cos(theta);
 					float sinPhi = sin(phi);
 					float cosPhi = cos(phi);
-					x[id] = r * cosPhi * cosTheta;
-					y[id] = r * cosPhi * sinTheta;
-					z[id] = r * sinPhi;
+					x[id] = d_emitterLength[0] * cosPhi * cosTheta;
+					y[id] = d_emitterLength[0] * cosPhi * sinTheta;
+					z[id] = d_emitterLength[0] * sinPhi;
 				}
 				else if(d_emitterType[0]==1)
 				{
@@ -132,19 +127,16 @@ __global__ void kernelParticle(float *x, float *y, float *z,
 				}else
 				{
 					r=curand(&state[id])%1000;
-					float u = (r/1000.f);
+					float theta = (r/1000.f) * 2.0 * 3.14159265359;
 					r=curand(&state[id])%1000;
-					float v = (r/1000.f);
-					float theta = u * 2.0 * 3.14159265359;
-					float phi = acos(2.0 * v - 1.0) - (3.14159265359/2);
-					float r = d_emitterLength[0];
+					float phi = acos(2.0 * (r/1000.f) - 1.0) - (3.14159265359/2);
 					float sinTheta = sin(theta);
 					float cosTheta = cos(theta);
 					float sinPhi = sin(phi);
 					float cosPhi = cos(phi);
-					x[id] = r * cosPhi * cosTheta;
-					y[id] = r * cosPhi * sinTheta;
-					z[id] = r * sinPhi;
+					x[id] = d_emitterLength[0] * cosPhi * cosTheta;
+					y[id] = d_emitterLength[0] * cosPhi * sinTheta;
+					z[id] = d_emitterLength[0] * sinPhi;
 				}
 			
 
@@ -280,16 +272,7 @@ void CudaControler::start()
 	//Allocate memory for perlin noise grids in device
 	cudaSafeCall(cudaMalloc(&d_perlin_x, bytes));
 	cudaSafeCall(cudaMalloc(&d_perlin_y, bytes));
-	cudaSafeCall(cudaMalloc(&d_perlin_z, bytes));
-
-	// Number of threads in each block
-	particles_blockSize = values::cu_BlockSize;
-	perlin_blockSize = values::cu_BlockSize;
-
-	// Number of blocks in grid
-	particles_gridSize = (int)ceil((float)e_MaxParticles/particles_blockSize);
-	perlin_gridSize = (int)ceil((float)(values::g_Size*values::g_Size*values::g_Size)/perlin_blockSize);	
-	
+	cudaSafeCall(cudaMalloc(&d_perlin_z, bytes));	
 
 	//calculatePerlin();
 
@@ -307,6 +290,15 @@ void CudaControler::close()
 
 void CudaControler::step(double dt)
 {
+
+	// Number of threads in each block
+	int particles_blockSize = cu_BlockSize;
+	int perlin_blockSize = cu_BlockSize;
+
+	// Number of blocks in grid
+	int particles_gridSize = (int)ceil((float)e_MaxParticles/particles_blockSize);
+	int perlin_gridSize = (int)ceil((float)(values::g_Size*values::g_Size*values::g_Size)/perlin_blockSize);
+
 	//Copy constant data to device
 	copyConstants();
 
@@ -365,10 +357,7 @@ void CudaControler::step(double dt)
 void CudaControler::resize()
 {
 	free(h_resource);
-
-	// Number of blocks in grid
-	particles_gridSize = (int)ceil((float)e_MaxParticles/particles_blockSize);
-
+	
 	// Size, in bytes, of Particles vector host
 	size_t bytes = e_MaxParticles*sizeof(float);
 
@@ -477,6 +466,9 @@ void CudaControler::copyConstants()
 
 void CudaControler::calculatePerlin()
 {
+	int perlin_blockSize = cu_BlockSize;
+	int perlin_gridSize = (int)ceil((float)(values::g_Size*values::g_Size*values::g_Size)/perlin_blockSize);
+
 	curandState* devStates;
 	cudaMalloc ( &devStates, values::g_Size*values::g_Size*values::g_Size*sizeof( curandState ) );
 	

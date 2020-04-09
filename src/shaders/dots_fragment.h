@@ -7,8 +7,9 @@ static const GLchar* dots_fragment[] =
 {
 "#version 450 core                              \n"
 "out vec4 color;                                \n"
+"uniform vec4 dotsColor;                        \n"
 "void main()                                    \n"
 "{                                              \n"
-"   color = vec4(0.5, 0.5, 1.0, 1.0);           \n"
+"   color = dotsColor;                          \n"
 "}                                              "
 };

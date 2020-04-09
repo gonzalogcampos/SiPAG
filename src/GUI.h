@@ -2,7 +2,7 @@
 
 void GUIupdate();
 void changeSize();
-void gui_ProcesSystem();
+void gui_System();
 void gui_Emitter();
 void gui_Render();
 void gui_Particle();

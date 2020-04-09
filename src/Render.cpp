@@ -19,15 +19,30 @@
 #include <GL/glm/gtc/matrix_transform.hpp>
 #include <GL/glm/gtc/type_ptr.hpp>
 
-const float CameraVelocity = 10.f;
-
-
+/*===============================================================*/
+/*======================    VALUES    ===========================*/
+/*===============================================================*/
+//Camera
 float c_Rotation = 0.f;
 float c_Distance = 10.f;
 float c_Height = 4.f;
-float r_DotColor[3] = {1.f, 0.f, 0.f};
-float r_WireColor[3] = {0.f, 0.f, 1.f};
+//Render
+float r_BackgroundColor[3] = {0.f, 0.f, 0.f};
+//Dots Shader
+float r_DotsColor[4] = {1.f, 0.f, 0.f, 1.f};
+float r_WiresColor[4] = {0.f, 0.f, 1.f, 1.f};
+//Normal shader
+char* r_Texture = "res/text.png";
+bool r_useRasAlpha = true;
 float r_ParticleColor[3] = {1.f, 1.f, 1.f};
+//Particle
+float p_minSize = 1.f;                           	//Size of the particle
+float p_incSize = .05f;                 	//%per second size improves
+float p_Opacity = 1.f;                        	//Opacity of the particle
+float p_OpacityEvolution = .05f;              	//% per second opacity decays
+/*===============================================================*/
+/*===============================================================*/
+
 
 //OPENGL ERROR CALLBACK
 void GLAPIENTRY
@@ -76,8 +91,7 @@ void Render::draw(float dt)
     this->dt = dt;
 
 	// Clear the screen
-    const GLfloat color[] = { 0.0f, 0.f, 0.0f, 1.0f };
-    glClearBufferfv(GL_COLOR, 0, color);
+    glClearBufferfv(GL_COLOR, 0, r_BackgroundColor);
 
     //Enable buffers
     enableAtrib();
@@ -185,7 +199,9 @@ void Render::compileShaders()
         glDeleteShader(geometry_shader);
         glDeleteShader(fragment_shader);
 
-        defaultVP  = glGetUniformLocation(default_program, "VP");
+        defaultVP       = glGetUniformLocation(default_program, "VP");
+        defaultIncSize  = glGetUniformLocation(default_program, "incSize");
+        defaultMinSize  = glGetUniformLocation(default_program, "minSize");
 
 
 
@@ -209,7 +225,8 @@ void Render::compileShaders()
         glDeleteShader(fragment_shader);
 
 
-        dotsVP  = glGetUniformLocation(default_program, "VP");
+        dotsVP          = glGetUniformLocation(dots_program, "VP");
+        dotsColor       = glGetUniformLocation(dots_program, "dotsColor");
 
         glUseProgram(default_program);
 }
@@ -310,9 +327,17 @@ void Render::paseUniforms()
     glm::mat4 P = glm::perspective(0.8f, 4.0f / 3.0f, 0.1f, 100.0f);
     glm::mat4 VP = P * V;
 
-
-    glUniformMatrix4fv( defaultVP, 1, GL_FALSE, glm::value_ptr( VP ) );
-    glUniformMatrix4fv( dotsVP, 1, GL_FALSE, glm::value_ptr( VP ) );
+    if(defaultShader)
+    {
+        glUniform1f(defaultMinSize, p_minSize);
+        glUniform1f(defaultIncSize, p_incSize);
+        glUniformMatrix4fv( defaultVP, 1, GL_FALSE, glm::value_ptr( VP ) );
+    }else
+    {
+        glUniformMatrix4fv( dotsVP, 1, GL_FALSE, glm::value_ptr( VP ) );
+        glUniform4fv(dotsColor, 1, r_DotsColor);
+    }
+    
 }
 
 void Render::changeShader()

@@ -6,15 +6,23 @@
 
 /*
 *
+* -------- SYSTEM --------
+* 
+*/
+extern int cu_BlockSize;
+
+/*
+*
 * -------- RENDER --------
 * 
 */
 extern float c_Rotation;
 extern float c_Distance;
 extern float c_Height;
-
-extern float r_DotColor[3];
-extern float r_WireColor[3];
+extern char* r_Texture;
+extern float r_BackgroundColor[3];
+extern float r_DotsColor[4];
+extern float r_WiresColor[4];
 extern float r_ParticleColor[3];
 
 /*
@@ -34,18 +42,12 @@ extern unsigned int e_MaxParticles;             //Max Particles
 */
 extern float p_LifeTime;                           //Life of the particle in seconds
 extern float p_RLifeTime;                          //% of random in life
-extern float p_Size;                               //Size of the particle
-extern float p_SizeEvolution;                      //%per second size improves
+extern float p_incSize;                            //Size of the particle
+extern float p_minSize;                            //%per second size improves
 extern float p_Opacity;                            //Opacity of the particle
 extern float p_OpacityEvolution;                   //% per second opacity decays
-extern float p_InitVelocityX;                      //X init velocity
-extern float p_InitVelocityY;                      //Y init velocity
-extern float p_InitVelocityZ;                      //Z init velocity
-extern float p_InitVelocity[3];                      //Z init velocity
-extern float p_RInitVelocity[3];                      //Z init velocity
-extern float p_RInitVelocityX;                     //X random in init velocity
-extern float p_RInitVelocityY;                     //Y random in init velocity
-extern float p_RInitVelocityZ;                     //Z random in init velocity
+extern float p_InitVelocity[3];                    //Init velocity
+extern float p_RInitVelocity[3];                   //Random init velocity
 extern float p_VelocityDecay;                      //% per second velocity decays
 
 
@@ -56,7 +58,6 @@ namespace values
 
         const bool run = false;
         const int print_priority = 2 ;
-        const int cu_BlockSize = 1024;
         const int sys_FPS = 60;
         const bool sys_Double = false;
 

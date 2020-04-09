@@ -14,6 +14,6 @@ static const GLchar* default_fragment[] =
 "void main()                                                            \n"
 "{                                                                      \n"
 "   color = texture(image, Vertex_UV);                                  \n"
-"   color = vec4(1.0, 1.0, 1.0, color.r*0.02);                   \n"
+"   color = vec4(1.0, 1.0, 1.0, color.r*0.02);                          \n"
 "}"
 };

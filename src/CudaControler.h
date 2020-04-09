@@ -67,9 +67,6 @@ class CudaControler
 	    float *d_lt_d;	//life time
 	    float *d_lr_d;	//life remaining
 
-
-        int particles_blockSize, particles_gridSize, perlin_blockSize, perlin_gridSize;
-
         cudaGraphicsResource_t resource_x = 0;
         cudaGraphicsResource_t resource_y = 0;
         cudaGraphicsResource_t resource_z = 0;        
