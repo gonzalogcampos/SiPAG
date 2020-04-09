@@ -60,6 +60,7 @@ extern float p_VelocityDecay;                      //% per second velocity decay
 * -------- WIND --------
 * 
 */
+extern float 	timeEv;
 
 extern int      w_VoxelNum;           //Grid Size
 extern float    w_Constant[3];

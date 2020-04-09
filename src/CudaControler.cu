@@ -16,7 +16,7 @@
 #include <curand_kernel.h>
 #include <cuda_gl_interop.h>
 
-#include <cuda_noise.cuh>
+#include <CudaNoiseFunc.cuh>
 
 
 #include <CudaControler.h>
@@ -43,6 +43,10 @@ float 	p_RInitVelocity[3] = {0.5f, 0.5f, 0.5f}; 	//Z init velocity
 
 float 	p_VelocityDecay = .3f;                  	//% per second velocity decays
 //WIND
+
+float 	currentTime = 0.f;
+float 	timeEv = 0.f;
+
 int 	w_VoxelNum = 256; 
 float 	w_Constant[3] = {0.f, 0.03f, 0.f};
 
@@ -81,6 +85,7 @@ enum Data
 //Constants
 //Time
 __constant__ float d_time[1];
+__constant__ float d_timeEv[1];
 //Life
 __constant__ float d_rLife[1], d_life[1];
 //Velocity
@@ -193,15 +198,16 @@ __global__ void kernelParticle(float *x, float *y, float *z,
 			//Wind perlin Big
 			if(d_1[0])
 			{
-				float pbx = d_1Amp[0]*repeaterPerlin(make_float3(x[id], y[id], z[id]), d_1Size[0], 2989,   d_1n[0], d_1lacunarity[0], d_1decay[0]);
-				float pby = d_1Amp[1]*repeaterPerlin(make_float3(x[id], y[id], z[id]), d_1Size[0], 841126, d_1n[0], d_1lacunarity[0], d_1decay[0]);
-				float pbz = d_1Amp[2]*repeaterPerlin(make_float3(x[id], y[id], z[id]), d_1Size[0], 189277, d_1n[0], d_1lacunarity[0], d_1decay[0]);
+				float3 pos = make_float3(x[id], y[id] + d_time[0]*d_timeEv[0], z[id]);
+				float pbx = d_1Amp[0]*repeaterPerlin(pos, d_1Size[0], 2989,   d_1n[0], d_1lacunarity[0], d_1decay[0]);
+				float pby = d_1Amp[1]*repeaterPerlin(pos, d_1Size[0], 841126, d_1n[0], d_1lacunarity[0], d_1decay[0]);
+				float pbz = d_1Amp[2]*repeaterPerlin(pos, d_1Size[0], 189277, d_1n[0], d_1lacunarity[0], d_1decay[0]);
 
 				vx[id] = vx[id] + pbx;
 				vy[id] = vy[id] + pby;
 				vz[id] = vz[id] + pbz;
 			}
-			/*
+			
 			if(d_2[0])
 			{
 				float pbx = d_2Amp[0]*repeaterPerlin(make_float3(x[id], y[id], z[id]), d_2Size[0], 2989,   d_2n[0], d_2lacunarity[0], d_2decay[0]);
@@ -212,7 +218,6 @@ __global__ void kernelParticle(float *x, float *y, float *z,
 				vy[id] = vy[id] + pby;
 				vz[id] = vz[id] + pbz;
 			}
-			*/
 
 			//Position addition
 			x[id] += vx[id]*dt;
@@ -338,7 +343,7 @@ void CudaControler::close()
 
 void CudaControler::step(double dt)
 {
-	time += dt;
+	currentTime += dt;
 	// Number of threads in each block
 	int particles_blockSize = cu_BlockSize;
 	int perlin_blockSize = cu_BlockSize;
@@ -503,6 +508,8 @@ void CudaControler::copyConstants()
 	cudaSafeCall(cudaMemcpyToSymbol(d_emitterLength, 	&(e_Length), 			sizeof(float)));
 	cudaSafeCall(cudaMemcpyToSymbol(d_emitterType, 		&(e_Type), 				sizeof(int)));
 
+	cudaSafeCall(cudaMemcpyToSymbol(d_time, 			&(currentTime), 		sizeof(float)));
+	cudaSafeCall(cudaMemcpyToSymbol(d_timeEv, 			&(timeEv), 				sizeof(float)));
 
 	cudaSafeCall(cudaMemcpyToSymbol(d_constant,			&(w_Constant), 			3*sizeof(float)));
 	cudaSafeCall(cudaMemcpyToSymbol(d_1,				&(w_1), 				sizeof(bool)));

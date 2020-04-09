@@ -93,8 +93,6 @@ void gui_Particle()
     ImGui::Text("Particle");
     ImGui::SliderFloat("Life",                  &p_LifeTime,            0.f,    5.f);
     ImGui::SliderFloat("Random Life",           &p_RLifeTime,           0.f,    5.f);
-    ImGui::SliderFloat("Size min",              &p_minSize,             .01f,   5.f);
-    ImGui::SliderFloat("Size inc",              &p_incSize,             0.f,    5.f);   //%per second size improves
     ImGui::SliderFloat3("Velocity",             p_InitVelocity,         -5.f,   5.f);    //Init velocity
     /*ImGui::SameLine();
     if(ImGui::Button("Set 0"))
@@ -137,6 +135,8 @@ void gui_Render()
         ImGui::Checkbox("Use R channel as alpha", &r_RasAlpha);
         if(r_RasAlpha)
             	ImGui::ColorEdit3("Particle Color", r_DefaultColor);
+        ImGui::SliderFloat("Size min",              &p_minSize,             .01f,   5.f);
+        ImGui::SliderFloat("Size inc",              &p_incSize,             0.f,    5.f);   //%per second size improves
         ImGui::SliderFloat("Opacity", &r_MaxOpacity, 0.f, 1.f);
         ImGui::SliderFloat("T Opacity growing", &r_TimeOpacityGrowing, 0.f, 1.f);
         ImGui::SliderFloat("T Opacity decreasing", &r_TimeOpacityDecreasing, 0.f, 1.f);
@@ -151,6 +151,7 @@ void gui_Wind()
     ImGui::Separator();
     ImGui::Text("Wind");
     ImGui::SliderFloat3("Constant Wind",w_Constant, -5.f, 5.f);
+    ImGui::SliderFloat("Y offset velocity", &timeEv, -5.f, 5.f);
     /*ImGui::SameLine();
     if(ImGui::Button("Set 0"))
     {
@@ -162,21 +163,21 @@ void gui_Wind()
     ImGui::Checkbox("Wind noise 1", &w_1);
     if(w_1)
     {
-        ImGui::SliderFloat3("Amplitude", w_1Amp, 0.f, 5.f);
-        ImGui::SliderFloat("Size", &w_1Size, 0.f, 10.f);
-        ImGui::SliderFloat("Lacunarity", &w_1lacunarity, 0.f, 10.f);
-        ImGui::SliderFloat("Decay", &w_1decay, 0.f, 10.f);
-        ImGui::SliderInt("N iterations", &w_1n, 0.f, 10.f);
+        ImGui::SliderFloat3("1 Amplitude", w_1Amp, 0.f, 5.f);
+        ImGui::SliderFloat("1 Size", &w_1Size, 0.f, 10.f);
+        ImGui::SliderFloat("1 Lacunarity", &w_1lacunarity, 0.f, 10.f);
+        ImGui::SliderFloat("1 Decay", &w_1decay, 0.f, 10.f);
+        ImGui::SliderInt("1 N iterations", &w_1n, 0.f, 10.f);
     }
 
     ImGui::Checkbox("Wind noise 2", &w_2);
     if(w_2)
     {
-        ImGui::SliderFloat3("Amplitude", w_2Amp, 0.f, 5.f);
-        ImGui::SliderFloat("Size", &w_2Size, 0.f, 100.f);
-        ImGui::SliderFloat("Lacunarity", &w_2lacunarity, 0.f, 10.f);
-        ImGui::SliderFloat("Decay", &w_2decay, 0.f, 10.f);
-        ImGui::SliderInt("N iterations", &w_2n, 0.f, 10.f);
+        ImGui::SliderFloat3("2 Amplitude", w_2Amp, 0.f, 5.f);
+        ImGui::SliderFloat("2 Size", &w_2Size, 0.f, 100.f);
+        ImGui::SliderFloat("2 Lacunarity", &w_2lacunarity, 0.f, 10.f);
+        ImGui::SliderFloat("2 Decay", &w_2decay, 0.f, 10.f);
+        ImGui::SliderInt("2 N iterations", &w_2n, 0.f, 10.f);
     }
 
     

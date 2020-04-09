@@ -37,8 +37,6 @@ class CudaControler
         void cudaSafeCall(cudaError err);
         void printData(Data d);
         void copyConstants();
-
-        float time = 0.f;
         
 		float *h_resource;    //host resource for  copy buffers
 
