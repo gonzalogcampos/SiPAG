@@ -25,7 +25,9 @@ const float CameraVelocity = 10.f;
 float c_Rotation = 0.f;
 float c_Distance = 10.f;
 float c_Height = 4.f;
-
+float r_DotColor[3] = {1.f, 0.f, 0.f};
+float r_WireColor[3] = {0.f, 0.f, 1.f};
+float r_ParticleColor[3] = {1.f, 1.f, 1.f};
 
 //OPENGL ERROR CALLBACK
 void GLAPIENTRY

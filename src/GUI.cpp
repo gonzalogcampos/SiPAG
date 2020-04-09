@@ -17,7 +17,25 @@ void GUIupdate()
 
     ImGui::Begin("Control Panel");
     ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-    
+
+    gui_ProcesSystem();
+    gui_Emitter();
+    gui_Render();
+    gui_Particle();
+    gui_Wind();
+
+    ImGui::End();
+    ImGui::Render();
+}
+
+void gui_ProcesSystem()
+{
+
+}
+
+
+void gui_Emitter()
+{
     ImGui::Text("Emitter");
     ImGui::InputInt("Max particles", &MaxParticles);
     ImGui::SameLine();
@@ -49,14 +67,10 @@ void GUIupdate()
         ImGui::SliderFloat("Emitter length", &e_Length, 0.f, 5.f);
     }
     
+}
 
-    ImGui::Text("Render");
-    if(ImGui::Button("Change Shader"))
-        Render::getInstance()->changeShader();
-    ImGui::SliderFloat("Camera Rotation", &c_Rotation, 0.0f, 6.3f);            // Edit 1 float using a slider from 0.0f to 1.0f
-    ImGui::SliderFloat("Camera Distance", &c_Distance, 0.0f, 100.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
-    ImGui::SliderFloat("Camera Height", &c_Height, -20.0f, 20.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
-    
+void gui_Particle()
+{
     ImGui::Text("Particle");
     ImGui::SliderFloat("Life",                  &p_LifeTime,            0.f,    5.f);
     ImGui::SliderFloat("Random Life",           &p_RLifeTime,           0.f,    5.f);
@@ -67,11 +81,28 @@ void GUIupdate()
     ImGui::SliderFloat3("Velocity",             p_InitVelocity,         -5.f,   5.f);    //Init velocity
     ImGui::SliderFloat3("Rand velocity",        p_RInitVelocity,        -5.f,   5.f);    //Random init velocity
     ImGui::SliderFloat("Velocity decay",        &p_VelocityDecay,       0.f,    5.f);
-
-    ImGui::End();
-
-    ImGui::Render();
 }
+
+void gui_Render()
+{
+    ImGui::Text("Render");
+    if(ImGui::Button("Change Shader"))
+        Render::getInstance()->changeShader();
+    ImGui::SliderFloat("Camera Rotation", &c_Rotation, 0.0f, 6.3f);            // Edit 1 float using a slider from 0.0f to 1.0f
+    ImGui::SliderFloat("Camera Distance", &c_Distance, 0.0f, 100.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
+    ImGui::SliderFloat("Camera Height", &c_Height, -20.0f, 20.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
+
+
+    ImGui::ColorEdit3("Dot Color", r_DotColor);
+    ImGui::ColorEdit3("Wire Color", r_WireColor);
+    ImGui::ColorEdit3("Particle Color", r_ParticleColor);
+}
+
+void gui_Wind()
+{
+
+}
+
 
 void changeSize()
 {

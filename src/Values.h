@@ -6,12 +6,16 @@
 
 /*
 *
-* -------- CAMERA --------
+* -------- RENDER --------
 * 
 */
 extern float c_Rotation;
 extern float c_Distance;
 extern float c_Height;
+
+extern float r_DotColor[3];
+extern float r_WireColor[3];
+extern float r_ParticleColor[3];
 
 /*
 *
@@ -55,7 +59,6 @@ namespace values
         const int cu_BlockSize = 1024;
         const int sys_FPS = 60;
         const bool sys_Double = false;
-        const unsigned int render_program = 0; //0=default 1=dots
 
         /*
             *
