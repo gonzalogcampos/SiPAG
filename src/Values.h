@@ -23,7 +23,11 @@ extern char* r_Texture;
 extern float r_BackgroundColor[3];
 extern float r_DotsColor[4];
 extern float r_WiresColor[4];
-extern float r_ParticleColor[3];
+extern float r_DefaultColor[3];
+extern bool r_RasAlpha;
+extern float r_TimeOpacityGrowing;
+extern float r_TimeOpacityDecreasing;
+extern float r_MaxOpacity;
 
 /*
 *
@@ -44,8 +48,6 @@ extern float p_LifeTime;                           //Life of the particle in sec
 extern float p_RLifeTime;                          //% of random in life
 extern float p_incSize;                            //Size of the particle
 extern float p_minSize;                            //%per second size improves
-extern float p_Opacity;                            //Opacity of the particle
-extern float p_OpacityEvolution;                   //% per second opacity decays
 extern float p_InitVelocity[3];                    //Init velocity
 extern float p_RInitVelocity[3];                   //Random init velocity
 extern float p_VelocityDecay;                      //% per second velocity decays

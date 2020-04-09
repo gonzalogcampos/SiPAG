@@ -11,6 +11,8 @@ static int MaxParticles = e_MaxParticles;
 static bool esferico = true;
 static bool lineal = false;
 static bool espiral = false;
+static bool defShader = true;
+
 void GUIupdate()
 {
     ImGui::NewFrame();
@@ -81,8 +83,6 @@ void gui_Particle()
     ImGui::SliderFloat("Random Life",           &p_RLifeTime,           0.f,    5.f);
     ImGui::SliderFloat("Size min",              &p_minSize,             .01f,   5.f);
     ImGui::SliderFloat("Size inc",              &p_incSize,             0.f,    5.f);   //%per second size improves
-    ImGui::SliderFloat("Opacity",               &p_Opacity,             0.f,    5.f);   //Opacity of the particle
-    ImGui::SliderFloat("Opacity evolution",     &p_OpacityEvolution,    0.f,    5.f);   //% per second opacity decays
     ImGui::SliderFloat3("Velocity",             p_InitVelocity,         -5.f,   5.f);    //Init velocity
     ImGui::SliderFloat3("Rand velocity",        p_RInitVelocity,        -5.f,   5.f);    //Random init velocity
     ImGui::SliderFloat("Velocity decay",        &p_VelocityDecay,       0.f,    5.f);
@@ -91,17 +91,31 @@ void gui_Particle()
 void gui_Render()
 {
     ImGui::Text("Render");
-    if(ImGui::Button("Change Shader"))
-        Render::getInstance()->changeShader();
+
     ImGui::SliderFloat("Camera Rotation", &c_Rotation, 0.0f, 6.3f);            // Edit 1 float using a slider from 0.0f to 1.0f
     ImGui::SliderFloat("Camera Distance", &c_Distance, 0.0f, 100.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
     ImGui::SliderFloat("Camera Height", &c_Height, -20.0f, 20.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
 
-
     ImGui::ColorEdit3("Background Color", r_BackgroundColor);
-    ImGui::ColorEdit4("Dots Color", r_DotsColor);
-    ImGui::ColorEdit4("Wire Color", r_WiresColor);
-    ImGui::ColorEdit3("Particle Color", r_ParticleColor);
+
+
+    if(ImGui::Button("Change Shader"))
+    {   
+        defShader = !defShader;
+        Render::getInstance()->changeShader();
+    }
+    if(defShader)
+    {
+        ImGui::Checkbox("Use R channel as alpha", &r_RasAlpha);
+        if(r_RasAlpha)
+            	ImGui::ColorEdit3("Particle Color", r_DefaultColor);
+        ImGui::SliderFloat("Opacity", &r_MaxOpacity, 0.f, 1.f);
+        ImGui::SliderFloat("T Opacity growing", &r_TimeOpacityGrowing, 0.f, 1.f);
+        ImGui::SliderFloat("T Opacity decreasing", &r_TimeOpacityDecreasing, 0.f, 1.f);
+    }else{   
+        ImGui::ColorEdit4("Dots Color", r_DotsColor);
+        ImGui::ColorEdit4("Wire Color", r_WiresColor);
+    }
 }
 
 void gui_Wind()

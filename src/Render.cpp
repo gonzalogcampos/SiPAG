@@ -33,8 +33,11 @@ float r_DotsColor[4] = {1.f, 0.f, 0.f, 1.f};
 float r_WiresColor[4] = {0.f, 0.f, 1.f, 1.f};
 //Normal shader
 char* r_Texture = "res/text.png";
-bool r_useRasAlpha = true;
-float r_ParticleColor[3] = {1.f, 1.f, 1.f};
+bool r_RasAlpha = true;
+float r_DefaultColor[3] = {1.f, 1.f, 1.f};
+float r_TimeOpacityGrowing = .1f;
+float r_TimeOpacityDecreasing = .2f;
+float r_MaxOpacity = 1.f;
 //Particle
 float p_minSize = 1.f;                           	//Size of the particle
 float p_incSize = .05f;                 	//%per second size improves
@@ -199,9 +202,14 @@ void Render::compileShaders()
         glDeleteShader(geometry_shader);
         glDeleteShader(fragment_shader);
 
-        defaultVP       = glGetUniformLocation(default_program, "VP");
-        defaultIncSize  = glGetUniformLocation(default_program, "incSize");
-        defaultMinSize  = glGetUniformLocation(default_program, "minSize");
+        defaultVP                       = glGetUniformLocation(default_program, "VP");
+        defaultIncSize                  = glGetUniformLocation(default_program, "incSize");
+        defaultMinSize                  = glGetUniformLocation(default_program, "minSize");
+        defaultRasAlpha                 = glGetUniformLocation(default_program, "RasAlpha");
+        defaultColor                    = glGetUniformLocation(default_program, "defaultColor");
+        defaultTimeOpacityGrowing       = glGetUniformLocation(default_program, "timeOpacityGrowing");
+        defaultTimeOpacityDecreasing    = glGetUniformLocation(default_program, "timeOpacityDecreasing");
+        defaultMaxOpacity               = glGetUniformLocation(default_program, "maxOpacity");
 
 
 
@@ -329,9 +337,14 @@ void Render::paseUniforms()
 
     if(defaultShader)
     {
+        glUniformMatrix4fv( defaultVP, 1, GL_FALSE, glm::value_ptr( VP ) );
+        glUniform1i(defaultRasAlpha, r_RasAlpha);
+        glUniform3fv(defaultColor, 1, r_DefaultColor);
+        glUniform1f(defaultTimeOpacityGrowing, r_TimeOpacityGrowing);
+        glUniform1f(defaultTimeOpacityDecreasing, r_TimeOpacityDecreasing);
+        glUniform1f(defaultMaxOpacity, r_MaxOpacity);
         glUniform1f(defaultMinSize, p_minSize);
         glUniform1f(defaultIncSize, p_incSize);
-        glUniformMatrix4fv( defaultVP, 1, GL_FALSE, glm::value_ptr( VP ) );
     }else
     {
         glUniformMatrix4fv( dotsVP, 1, GL_FALSE, glm::value_ptr( VP ) );

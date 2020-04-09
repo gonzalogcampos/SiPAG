@@ -45,7 +45,9 @@ class Render
         //Render programs
         GLuint default_program, dots_program;
         //Uniforms
-        GLuint defaultVP, defaultIncSize, defaultMinSize, dotsVP, dotsColor;
+        GLuint defaultVP, defaultIncSize, defaultMinSize, defaultRasAlpha, 
+                    defaultColor, defaultTimeOpacityGrowing, defaultTimeOpacityDecreasing, 
+                    defaultMaxOpacity, dotsVP, dotsColor;
 
         //Buffers
         GLuint bufferX, bufferY, bufferZ, bufferVX, bufferVY, bufferVZ, bufferLT, bufferLR;
