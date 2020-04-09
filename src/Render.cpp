@@ -24,7 +24,7 @@
 /*===============================================================*/
 //Camera
 float c_Rotation = 0.f;
-float c_Distance = 10.f;
+float c_Distance = 15.f;
 float c_Height = 3.f;
 //Render
 float r_BackgroundColor[3] = {0.f, 0.f, 0.f};

@@ -15,6 +15,7 @@
 #include <curand.h>
 #include <curand_kernel.h>
 #include <cuda_gl_interop.h>
+//#include <cuda_noise.cuh>
 
 
 #include <CudaControler.h>
@@ -36,13 +37,13 @@ unsigned int e_MaxParticles = 30000;           	//Max Particles
 float p_LifeTime = 2.f;                       	//Life of the particle in seconds
 float p_RLifeTime = 0.2f;                     	//% of random in life
 
-float p_InitVelocity[3] = {0.0f, 0.0f, 0.0f}; 	//Z init velocity
+float p_InitVelocity[3] = {0.0f, 1.5f, 0.0f}; 	//Z init velocity
 float p_RInitVelocity[3] = {0.5f, 0.5f, 0.5f}; 	//Z init velocity
 
 float p_VelocityDecay = .3f;                  	//% per second velocity decays
 //WIND
 int w_VoxelNum = 256; 
-float w_Constant[3] = {0.f,0.3f,0.f};
+float w_Constant[3] = {0.f,0.03f,0.f};
 /*===============================================================*/
 /*===============================================================*/
 

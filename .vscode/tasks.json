@@ -25,22 +25,12 @@
                 "-lgdi32",  
                 "-luser32", 
                 "-Llib/GL",
-                //"-lglui32" 
                 "-lglew32",
-                "-lfreeglut" , 
                 "-lglu32", 
                 "-lopengl32",
                 "-lSOIL",
                 "-lglfw3",
-                "-limm32",
-                //"-Llib/SFML/",
-                //"-lsfml-graphics",
-                //"-lsfml-system",
-                //"-lsfml-window",
-                //"-Llib/TGUI",
-                //"-ltgui",
-                //"-lntdll",
-                //"-lshell32"
+                "-limm32"
             ],
                 "group": {
                 "kind": "build",

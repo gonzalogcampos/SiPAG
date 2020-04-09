@@ -15,6 +15,8 @@ static bool lineal = false;
 static bool espiral = false;
 static bool defShader = true;
 
+
+
 void GUIupdate()
 {
     ImGui_ImplOpenGL3_NewFrame();
