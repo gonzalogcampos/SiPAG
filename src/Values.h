@@ -37,10 +37,10 @@ extern float r_MaxOpacity;
 * -------- EMITTER --------
 * 
 */
-extern float e_Length;                         //Emitter length
+extern float e_Length;                              //Emitter length
 extern int e_Type;
-extern int e_EmissionFrec;                      //In 1/1000
-extern unsigned int e_MaxParticles;             //Max Particles
+extern int e_EmissionFrec;                          //In 1/1000
+extern int e_MaxParticles;                          //Max Particles
 
 /*
 *
@@ -61,10 +61,19 @@ extern float p_VelocityDecay;                      //% per second velocity decay
 * 
 */
 
-extern int w_VoxelNum;           //Grid Size
-extern float w_Constant[3];
+extern int      w_VoxelNum;           //Grid Size
+extern float    w_Constant[3];
 //Wind 1
-const unsigned int w_Seed = 1;             //Wind 1 initial seed
-const unsigned int w_SeedVariation = 0;    //Wind 1 seed valiarion per second
-const float w_TurbulenceSize = 1.f;        //Wind 1 turbulence size
-const float w_Velocity = 1.f;              //Wind 1 velocity
+extern bool     w_1;
+extern int 	    w_1n;
+extern float 	w_1Amp[3];
+extern float 	w_1Size;
+extern float 	w_1lacunarity;
+extern float 	w_1decay;
+
+extern bool     w_2;
+extern int 	    w_2n;
+extern float 	w_2Amp[3];
+extern float 	w_2Size;
+extern float 	w_2lacunarity;
+extern float 	w_2decay;

@@ -96,7 +96,21 @@ void gui_Particle()
     ImGui::SliderFloat("Size min",              &p_minSize,             .01f,   5.f);
     ImGui::SliderFloat("Size inc",              &p_incSize,             0.f,    5.f);   //%per second size improves
     ImGui::SliderFloat3("Velocity",             p_InitVelocity,         -5.f,   5.f);    //Init velocity
+    /*ImGui::SameLine();
+    if(ImGui::Button("Set 0"))
+    {
+        p_InitVelocity[0] =  0.f;
+        p_InitVelocity[1] =  0.f;
+        p_InitVelocity[2] =  0.f;
+    }*/
     ImGui::SliderFloat3("Rand velocity",        p_RInitVelocity,        -5.f,   5.f);    //Random init velocity
+    /*ImGui::SameLine();
+    if(ImGui::Button("Set 0"))
+    {
+        p_RInitVelocity[0] =  0.f;
+        p_RInitVelocity[1] =  0.f;
+        p_RInitVelocity[2] =  0.f;
+    }*/
     ImGui::SliderFloat("Velocity decay",        &p_VelocityDecay,       0.f,    5.f);
 }
 
@@ -104,10 +118,14 @@ void gui_Render()
 {
     ImGui::Separator();
     ImGui::Text("Render");
-    ImGui::SliderFloat("Camera Rotation", &c_Rotation, 0.0f, 6.3f);            // Edit 1 float using a slider from 0.0f to 1.0f
-    ImGui::SliderFloat("Camera Distance", &c_Distance, 0.0f, 100.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
-    ImGui::SliderFloat("Camera Height", &c_Height, -20.0f, 20.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
-    ImGui::ColorEdit3("Background Color", r_BackgroundColor);
+    ImGui::SliderFloat("Camera Rotation",       &c_Rotation,            0.0f,   6.3f);            // Edit 1 float using a slider from 0.0f to 1.0f
+    ImGui::SliderFloat("Camera Distance",       &c_Distance,            0.0f,   100.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
+    ImGui::SliderFloat("Camera Height",         &c_Height,              -20.0f, 20.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
+    ImGui::SameLine();
+    if(ImGui::Button("Set 0"))
+        c_Height =  0.f;
+    
+    ImGui::ColorEdit3("Background Color",       r_BackgroundColor);
 
     if(ImGui::Button("Change Shader"))
     {   
@@ -131,8 +149,37 @@ void gui_Render()
 void gui_Wind()
 {
     ImGui::Separator();
-    ImGui::Text("Render");
+    ImGui::Text("Wind");
     ImGui::SliderFloat3("Constant Wind",w_Constant, -5.f, 5.f);
+    /*ImGui::SameLine();
+    if(ImGui::Button("Set 0"))
+    {
+        w_Constant[0] =  0.f;
+        w_Constant[1] =  0.f;
+        w_Constant[2] =  0.f;
+    }*/
+
+    ImGui::Checkbox("Wind noise 1", &w_1);
+    if(w_1)
+    {
+        ImGui::SliderFloat3("Amplitude", w_1Amp, 0.f, 5.f);
+        ImGui::SliderFloat("Size", &w_1Size, 0.f, 10.f);
+        ImGui::SliderFloat("Lacunarity", &w_1lacunarity, 0.f, 10.f);
+        ImGui::SliderFloat("Decay", &w_1decay, 0.f, 10.f);
+        ImGui::SliderInt("N iterations", &w_1n, 0.f, 10.f);
+    }
+
+    ImGui::Checkbox("Wind noise 2", &w_2);
+    if(w_2)
+    {
+        ImGui::SliderFloat3("Amplitude", w_2Amp, 0.f, 5.f);
+        ImGui::SliderFloat("Size", &w_2Size, 0.f, 100.f);
+        ImGui::SliderFloat("Lacunarity", &w_2lacunarity, 0.f, 10.f);
+        ImGui::SliderFloat("Decay", &w_2decay, 0.f, 10.f);
+        ImGui::SliderInt("N iterations", &w_2n, 0.f, 10.f);
+    }
+
+    
 }
 
 

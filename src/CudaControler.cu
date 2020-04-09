@@ -28,23 +28,37 @@
 /*======================    VALUES    ===========================*/
 /*===============================================================*/
 //SYSTEM
-int cu_BlockSize = 1024;
+int 	cu_BlockSize = 1024;
 //EMITTER
-float e_Length = 1.f;                        	//Emitter radious
-int e_Type = 0;                        			//Emitter Type
-int e_EmissionFrec = 100;            			//In 1/1000
-unsigned int e_MaxParticles = 30000;           	//Max Particles
+float 	e_Length = 1.f;                        	//Emitter radious
+int 	e_Type = 0;                        			//Emitter Type
+int 	e_EmissionFrec = 100;            			//In 1/1000
+int 	e_MaxParticles = 30000;           	//Max Particles
 //PARTICLES
-float p_LifeTime = 2.f;                       	//Life of the particle in seconds
-float p_RLifeTime = 0.2f;                     	//% of random in life
+float 	p_LifeTime = 2.f;                       	//Life of the particle in seconds
+float 	p_RLifeTime = 0.2f;                     	//% of random in life
 
-float p_InitVelocity[3] = {0.0f, 1.5f, 0.0f}; 	//Z init velocity
-float p_RInitVelocity[3] = {0.5f, 0.5f, 0.5f}; 	//Z init velocity
+float 	p_InitVelocity[3] = {0.0f, 1.5f, 0.0f}; 	//Z init velocity
+float 	p_RInitVelocity[3] = {0.5f, 0.5f, 0.5f}; 	//Z init velocity
 
-float p_VelocityDecay = .3f;                  	//% per second velocity decays
+float 	p_VelocityDecay = .3f;                  	//% per second velocity decays
 //WIND
-int w_VoxelNum = 256; 
-float w_Constant[3] = {0.f,0.03f,0.f};
+int 	w_VoxelNum = 256; 
+float 	w_Constant[3] = {0.f, 0.03f, 0.f};
+
+bool	w_1 = true;
+int 	w_1n = 3;
+float 	w_1Amp[3] = {1.f, 1.f, 1.f};
+float 	w_1Size = 1.f;
+float 	w_1lacunarity = 1.f;
+float 	w_1decay = 1.f;
+
+bool	w_2 = false;
+int 	w_2n = 3;
+float 	w_2Amp[3] = {1.f, 1.f, 1.f};
+float 	w_2Size = 1.f;
+float 	w_2lacunarity = 1.f;
+float 	w_2decay = 1.f;
 /*===============================================================*/
 /*===============================================================*/
 
@@ -64,25 +78,27 @@ enum Data
 	PARTICLE_LR
 };
 
-//Constants for particle
-	//Life
-	__constant__ float d_rLife[1], d_life[1];
-	//Velocity
-	__constant__ float d_initVelocity[3], d_rInitVelocity[3];
-	__constant__ float d_vDecay[1];
-
+//Constants
+//Time
+__constant__ float d_time[1];
+//Life
+__constant__ float d_rLife[1], d_life[1];
+//Velocity
+__constant__ float d_initVelocity[3], d_rInitVelocity[3];
+__constant__ float d_vDecay[1];
 //Constants for emitter
-__constant__ unsigned int d_maxParticles[1];
+__constant__ int d_maxParticles[1];
 __constant__ int d_emitterFrec[1];
 __constant__ float d_emitterLength[1];
 __constant__ int d_emitterType[1];
-
-
 //Constans for wind
 __constant__ float d_constant[3];
-__constant__ unsigned int d_gridSize[1], d_perlinSize[1];
-
-
+__constant__ bool d_1[1];
+__constant__ int d_1n[1];
+__constant__ float d_1Size[1], d_1lacunarity[1], d_1decay[1], d_1Amp[3];
+__constant__ bool d_2[1];
+__constant__ int d_2n[1];
+__constant__ float d_2Size[1], d_2lacunarity[1], d_2decay[1], d_2Amp[3];
 
 __global__ void setupRandomParticle( curandState * state, unsigned long seed)
 {
@@ -173,14 +189,30 @@ __global__ void kernelParticle(float *x, float *y, float *z,
 			vy[id] = vy[id] + d_constant[1];
 			vz[id] = vz[id] + d_constant[2];
 
+			
 			//Wind perlin Big
-			float pbx = repeaterPerlin(make_float3(x[id], y[id], z[id]), .5f, 2989, 3, 10, .3f);
-			float pby = 0.f*repeaterPerlin(make_float3(x[id], y[id], z[id]), .5f, 841126, 3, 10, .3f);
-			float pbz = repeaterPerlin(make_float3(x[id], y[id], z[id]), .5f, 189277, 3, 10, .3f);
+			if(d_1[0])
+			{
+				float pbx = d_1Amp[0]*repeaterPerlin(make_float3(x[id], y[id], z[id]), d_1Size[0], 2989,   d_1n[0], d_1lacunarity[0], d_1decay[0]);
+				float pby = d_1Amp[1]*repeaterPerlin(make_float3(x[id], y[id], z[id]), d_1Size[0], 841126, d_1n[0], d_1lacunarity[0], d_1decay[0]);
+				float pbz = d_1Amp[2]*repeaterPerlin(make_float3(x[id], y[id], z[id]), d_1Size[0], 189277, d_1n[0], d_1lacunarity[0], d_1decay[0]);
 
-			vx[id] = vx[id] + pbx;
-			vy[id] = vy[id] + pby;
-			vz[id] = vz[id] + pbz;
+				vx[id] = vx[id] + pbx;
+				vy[id] = vy[id] + pby;
+				vz[id] = vz[id] + pbz;
+			}
+			/*
+			if(d_2[0])
+			{
+				float pbx = d_2Amp[0]*repeaterPerlin(make_float3(x[id], y[id], z[id]), d_2Size[0], 2989,   d_2n[0], d_2lacunarity[0], d_2decay[0]);
+				float pby = d_2Amp[1]*repeaterPerlin(make_float3(x[id], y[id], z[id]), d_2Size[0], 841126, d_2n[0], d_2lacunarity[0], d_2decay[0]);
+				float pbz = d_2Amp[2]*repeaterPerlin(make_float3(x[id], y[id], z[id]), d_2Size[0], 189277, d_2n[0], d_2lacunarity[0], d_2decay[0]);
+
+				vx[id] = vx[id] + pbx;
+				vy[id] = vy[id] + pby;
+				vz[id] = vz[id] + pbz;
+			}
+			*/
 
 			//Position addition
 			x[id] += vx[id]*dt;
@@ -306,7 +338,7 @@ void CudaControler::close()
 
 void CudaControler::step(double dt)
 {
-
+	time += dt;
 	// Number of threads in each block
 	int particles_blockSize = cu_BlockSize;
 	int perlin_blockSize = cu_BlockSize;
@@ -466,14 +498,27 @@ void CudaControler::copyConstants()
 	cudaSafeCall(cudaMemcpyToSymbol(d_initVelocity, 	&(p_InitVelocity), 		3*sizeof(float)));
 	cudaSafeCall(cudaMemcpyToSymbol(d_rInitVelocity, 	&(p_RInitVelocity), 	3*sizeof(float)));
 
-	cudaSafeCall(cudaMemcpyToSymbol(d_maxParticles, 	&(e_MaxParticles), 		sizeof(unsigned int)));
+	cudaSafeCall(cudaMemcpyToSymbol(d_maxParticles, 	&(e_MaxParticles), 		sizeof(int)));
 	cudaSafeCall(cudaMemcpyToSymbol(d_emitterFrec, 		&(e_EmissionFrec), 		sizeof(int)));
 	cudaSafeCall(cudaMemcpyToSymbol(d_emitterLength, 	&(e_Length), 			sizeof(float)));
 	cudaSafeCall(cudaMemcpyToSymbol(d_emitterType, 		&(e_Type), 				sizeof(int)));
 
 
 	cudaSafeCall(cudaMemcpyToSymbol(d_constant,			&(w_Constant), 			3*sizeof(float)));
-	cudaSafeCall(cudaMemcpyToSymbol(d_gridSize,			&(w_VoxelNum), 			sizeof(unsigned int)));
+	cudaSafeCall(cudaMemcpyToSymbol(d_1,				&(w_1), 				sizeof(bool)));
+	cudaSafeCall(cudaMemcpyToSymbol(d_2,				&(w_2), 				sizeof(bool)));
+	cudaSafeCall(cudaMemcpyToSymbol(d_1Amp,				&(w_1Amp), 				3*sizeof(float)));
+	cudaSafeCall(cudaMemcpyToSymbol(d_2Amp,				&(w_2Amp), 				3*sizeof(float)));
+	cudaSafeCall(cudaMemcpyToSymbol(d_1n,				&(w_1n), 				sizeof(int)));
+	cudaSafeCall(cudaMemcpyToSymbol(d_2n,				&(w_2n), 				sizeof(int)));
+	cudaSafeCall(cudaMemcpyToSymbol(d_1Size,			&(w_1Size), 			sizeof(float)));
+	cudaSafeCall(cudaMemcpyToSymbol(d_2Size,			&(w_2Size), 			sizeof(float)));
+	cudaSafeCall(cudaMemcpyToSymbol(d_1lacunarity,		&(w_1lacunarity), 		sizeof(float)));
+	cudaSafeCall(cudaMemcpyToSymbol(d_2lacunarity,		&(w_2lacunarity), 		sizeof(float)));
+	cudaSafeCall(cudaMemcpyToSymbol(d_1decay,			&(w_1decay), 			sizeof(float)));
+	cudaSafeCall(cudaMemcpyToSymbol(d_2decay,			&(w_2decay), 			sizeof(float)));
+
+	//cudaSafeCall(cudaMemcpyToSymbol(d_gridSize,			&(w_VoxelNum), 			sizeof(unsigned int)));
 
 }
 

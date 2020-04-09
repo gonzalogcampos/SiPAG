@@ -38,6 +38,8 @@ class CudaControler
         void printData(Data d);
         void copyConstants();
 
+        float time = 0.f;
+        
 		float *h_resource;    //host resource for  copy buffers
 
         float *d_perlin_x, *d_perlin_y, *d_perlin_z; //Perlin noise matrix
