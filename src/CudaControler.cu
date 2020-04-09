@@ -26,8 +26,9 @@
 /*======================    VALUES    ===========================*/
 /*===============================================================*/
 //EMITTER
-float e_Radious = 1.f;                        //Emitter radious
-unsigned int e_EmissionFrec = 100;            //In 1/1000
+float e_Length = 1.f;                        //Emitter radious
+int e_Type = 0;                        			//Emitter Type
+int e_EmissionFrec = 100;            //In 1/1000
 unsigned int e_MaxParticles = 30000;           //Max Particles
 //PARTICLES
 float p_LifeTime = 2.f;                       //Life of the particle in seconds
@@ -36,12 +37,10 @@ float p_Size = 1.f;                           //Size of the particle
 float p_SizeEvolution = .05f;                 //%per second size improves
 float p_Opacity = 1.f;                        //Opacity of the particle
 float p_OpacityEvolution = .05f;              //% per second opacity decays
-float p_InitVelocityX = 0.0f;                 //X init velocity
-float p_InitVelocityY = 0.0f;                 //Y init velocity
-float p_InitVelocityZ = 0.0f;                 //Z init velocity
-float p_RInitVelocityX = 0.5f;                //X random in init velocity
-float p_RInitVelocityY = 0.5f;                //Y random in init velocity
-float p_RInitVelocityZ = 0.5f;                //Z random in init velocity
+
+float p_InitVelocity[3] = {0.0f, 0.0f, 0.0f};                 //Z init velocity
+float p_RInitVelocity[3] = {0.5f, 0.5f, 0.5f};                 //Z init velocity
+
 float p_VelocityDecay = .3f;                  //% per second velocity decays
 /*===============================================================*/
 /*===============================================================*/
@@ -66,12 +65,14 @@ enum Data
 	//Life
 	__constant__ float d_rLife[1], d_life[1];
 	//Velocity
-	__constant__ float d_initVelocityX[1], d_initVelocityY[1], d_initVelocityZ[1];
-	__constant__ float d_rInitVelocityX[1], d_rInitVelocityY[1], d_rInitVelocityZ[1];
+	__constant__ float d_initVelocity[3], d_rInitVelocity[3];
 	__constant__ float d_vDecay[1];
 
 //Constants for emitter
-__constant__ unsigned int d_maxParticles[1], d_emitterFrec[1];
+__constant__ unsigned int d_maxParticles[1];
+__constant__ int d_emitterFrec[1];
+__constant__ float d_emitterLength[1];
+__constant__ int d_emitterType[1];
 
 
 //Constans for wind
@@ -105,19 +106,60 @@ __global__ void kernelParticle(float *x, float *y, float *z,
 			int r = curand(&state[id])%1000;
 			if(r<d_emitterFrec[0])
 			{
-				x[id] = 0.f;
-				y[id] = 0.f;
-				z[id] = 0.f;
+				//Fist of all choose the position
+				if(d_emitterType[0]==2)
+				{
+					r=curand(&state[id])%1000;
+					float u = (r/1000.f);
+					float v = (r/1000.f);
+					float theta = u * 2.0 * 3.14159265359;
+					float phi = acos(2.0 * v - 1.0) - (3.14159265359/2);
+					float r = d_emitterLength[0];
+					float sinTheta = sin(theta);
+					float cosTheta = cos(theta);
+					float sinPhi = sin(phi);
+					float cosPhi = cos(phi);
+					x[id] = r * cosPhi * cosTheta;
+					y[id] = r * cosPhi * sinTheta;
+					z[id] = r * sinPhi;
+				}
+				else if(d_emitterType[0]==1)
+				{
+					r=curand(&state[id])%1000;
+					x[id] = d_emitterLength[0]*((r/1000.f)-.5f);
+					y[id] = 0.f;
+					z[id] = 0.f;
+				}else
+				{
+					r=curand(&state[id])%1000;
+					float u = (r/1000.f);
+					r=curand(&state[id])%1000;
+					float v = (r/1000.f);
+					float theta = u * 2.0 * 3.14159265359;
+					float phi = acos(2.0 * v - 1.0) - (3.14159265359/2);
+					float r = d_emitterLength[0];
+					float sinTheta = sin(theta);
+					float cosTheta = cos(theta);
+					float sinPhi = sin(phi);
+					float cosPhi = cos(phi);
+					x[id] = r * cosPhi * cosTheta;
+					y[id] = r * cosPhi * sinTheta;
+					z[id] = r * sinPhi;
+				}
+			
+
+				//Then calculate de init velocity
+				r=curand(&state[id])%1000;
+				vx[id] = d_initVelocity[0] + d_rInitVelocity[0]*2.f*((r/1000.f)-0.5f);
 
 				r=curand(&state[id])%1000;
-				vx[id] = d_initVelocityX[0] + d_rInitVelocityX[0]*2.f*((r/1000.f)-0.5f);
+				vy[id] = d_initVelocity[1] + d_rInitVelocity[1]*2.f*((r/1000.f)-0.5f);
 
 				r=curand(&state[id])%1000;
-				vy[id] = d_initVelocityY[0] + d_rInitVelocityY[0]*2.f*((r/1000.f)-0.5f);
+				vz[id] = d_initVelocity[2] + d_rInitVelocity[2]*2.f*((r/1000.f)-0.5f);
 
-				r=curand(&state[id])%1000;
-				vz[id] = d_initVelocityZ[0] + d_rInitVelocityZ[0]*2.f*((r/1000.f)-0.5f);
 
+				//And last, calculate the life
 				r=curand(&state[id])%1000;
 				lt[id] = 0.f;
 				lr[id] = d_life[0] + d_rLife[0]*(0.5*(r/1000.f));
@@ -416,14 +458,13 @@ void CudaControler::copyConstants()
 	cudaSafeCall(cudaMemcpyToSymbol(d_rLife, 			&(p_RLifeTime),			sizeof(const float)));
 	cudaSafeCall(cudaMemcpyToSymbol(d_life, 			&(p_LifeTime), 			sizeof(const float)));
 	cudaSafeCall(cudaMemcpyToSymbol(d_vDecay, 			&(p_VelocityDecay), 	sizeof(const float)));
-	cudaSafeCall(cudaMemcpyToSymbol(d_initVelocityX, 	&(p_InitVelocityX), 	sizeof(const float)));
-	cudaSafeCall(cudaMemcpyToSymbol(d_initVelocityY, 	&(p_InitVelocityY), 	sizeof(const float)));
-	cudaSafeCall(cudaMemcpyToSymbol(d_initVelocityZ, 	&(p_InitVelocityZ), 	sizeof(const float)));
-	cudaSafeCall(cudaMemcpyToSymbol(d_rInitVelocityX,	&(p_RInitVelocityX), 	sizeof(const float)));
-	cudaSafeCall(cudaMemcpyToSymbol(d_rInitVelocityY,	&(p_RInitVelocityY), 	sizeof(const float)));
-	cudaSafeCall(cudaMemcpyToSymbol(d_rInitVelocityZ,	&(p_RInitVelocityZ), 	sizeof(const float)));
+	cudaSafeCall(cudaMemcpyToSymbol(d_initVelocity, 	&(p_InitVelocity), 		3*sizeof(const float)));
+	cudaSafeCall(cudaMemcpyToSymbol(d_rInitVelocity, 	&(p_RInitVelocity), 	3*sizeof(const float)));
+
 	cudaSafeCall(cudaMemcpyToSymbol(d_maxParticles, 	&(e_MaxParticles), 		sizeof(const unsigned int)));
-	cudaSafeCall(cudaMemcpyToSymbol(d_emitterFrec, 		&(e_EmissionFrec), 		sizeof(const unsigned int)));
+	cudaSafeCall(cudaMemcpyToSymbol(d_emitterFrec, 		&(e_EmissionFrec), 		sizeof(const int)));
+	cudaSafeCall(cudaMemcpyToSymbol(d_emitterLength, 	&(e_Length), 			sizeof(const float)));
+	cudaSafeCall(cudaMemcpyToSymbol(d_emitterType, 		&(e_Type), 				sizeof(const int)));
 
 
 	cudaSafeCall(cudaMemcpyToSymbol(d_constantX,		&(values::w_ConstantX), 		sizeof(const float)));

@@ -18,8 +18,9 @@ extern float c_Height;
 * -------- EMITTER --------
 * 
 */
-extern float e_Radious;                         //Emitter radious
-extern unsigned int e_EmissionFrec;             //In 1/1000
+extern float e_Length;                         //Emitter length
+extern int e_Type;
+extern int e_EmissionFrec;                      //In 1/1000
 extern unsigned int e_MaxParticles;             //Max Particles
 
 /*
@@ -36,6 +37,8 @@ extern float p_OpacityEvolution;                   //% per second opacity decays
 extern float p_InitVelocityX;                      //X init velocity
 extern float p_InitVelocityY;                      //Y init velocity
 extern float p_InitVelocityZ;                      //Z init velocity
+extern float p_InitVelocity[3];                      //Z init velocity
+extern float p_RInitVelocity[3];                      //Z init velocity
 extern float p_RInitVelocityX;                     //X random in init velocity
 extern float p_RInitVelocityY;                     //Y random in init velocity
 extern float p_RInitVelocityZ;                     //Z random in init velocity
