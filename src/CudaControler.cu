@@ -40,6 +40,9 @@ float p_InitVelocity[3] = {0.0f, 0.0f, 0.0f}; 	//Z init velocity
 float p_RInitVelocity[3] = {0.5f, 0.5f, 0.5f}; 	//Z init velocity
 
 float p_VelocityDecay = .3f;                  	//% per second velocity decays
+//WIND
+int w_VoxelNum = 256; 
+float w_Constant[3] = {0.f,0.3f,0.f};
 /*===============================================================*/
 /*===============================================================*/
 
@@ -74,7 +77,7 @@ __constant__ int d_emitterType[1];
 
 
 //Constans for wind
-__constant__ float d_constantX[1], d_constantY[1], d_constantZ[1];
+__constant__ float d_constant[3];
 __constant__ unsigned int d_gridSize[1], d_perlinSize[1];
 
 
@@ -164,9 +167,9 @@ __global__ void kernelParticle(float *x, float *y, float *z,
 			vz[id] = vz[id] - vz[id]*d_vDecay[0]*dt;
 
 			//Wind constant velocity
-			vx[id] = vx[id] + d_constantX[0];
-			vy[id] = vy[id] + d_constantY[0];
-			vz[id] = vz[id] + d_constantZ[0];
+			vx[id] = vx[id] + d_constant[0];
+			vy[id] = vy[id] + d_constant[1];
+			vz[id] = vz[id] + d_constant[2];
 
 			//Position addition
 			x[id] += vx[id]*dt;
@@ -267,7 +270,7 @@ void CudaControler::start()
 
 
 	// Size, in bytes, of each 3D perlin matrix in device
-	bytes = values::g_Size*values::g_Size*values::g_Size*sizeof(float);
+	bytes = w_VoxelNum*w_VoxelNum*w_VoxelNum*sizeof(float);
 
 	//Allocate memory for perlin noise grids in device
 	cudaSafeCall(cudaMalloc(&d_perlin_x, bytes));
@@ -297,7 +300,7 @@ void CudaControler::step(double dt)
 
 	// Number of blocks in grid
 	int particles_gridSize = (int)ceil((float)e_MaxParticles/particles_blockSize);
-	int perlin_gridSize = (int)ceil((float)(values::g_Size*values::g_Size*values::g_Size)/perlin_blockSize);
+	int perlin_gridSize = (int)ceil((float)(w_VoxelNum*w_VoxelNum*w_VoxelNum)/perlin_blockSize);
 
 	//Copy constant data to device
 	copyConstants();
@@ -444,22 +447,20 @@ void CudaControler::printData(Data d)
 
 void CudaControler::copyConstants()
 {
-	cudaSafeCall(cudaMemcpyToSymbol(d_rLife, 			&(p_RLifeTime),			sizeof(const float)));
-	cudaSafeCall(cudaMemcpyToSymbol(d_life, 			&(p_LifeTime), 			sizeof(const float)));
-	cudaSafeCall(cudaMemcpyToSymbol(d_vDecay, 			&(p_VelocityDecay), 	sizeof(const float)));
-	cudaSafeCall(cudaMemcpyToSymbol(d_initVelocity, 	&(p_InitVelocity), 		3*sizeof(const float)));
-	cudaSafeCall(cudaMemcpyToSymbol(d_rInitVelocity, 	&(p_RInitVelocity), 	3*sizeof(const float)));
+	cudaSafeCall(cudaMemcpyToSymbol(d_rLife, 			&(p_RLifeTime),			sizeof(float)));
+	cudaSafeCall(cudaMemcpyToSymbol(d_life, 			&(p_LifeTime), 			sizeof(float)));
+	cudaSafeCall(cudaMemcpyToSymbol(d_vDecay, 			&(p_VelocityDecay), 	sizeof(float)));
+	cudaSafeCall(cudaMemcpyToSymbol(d_initVelocity, 	&(p_InitVelocity), 		3*sizeof(float)));
+	cudaSafeCall(cudaMemcpyToSymbol(d_rInitVelocity, 	&(p_RInitVelocity), 	3*sizeof(float)));
 
-	cudaSafeCall(cudaMemcpyToSymbol(d_maxParticles, 	&(e_MaxParticles), 		sizeof(const unsigned int)));
-	cudaSafeCall(cudaMemcpyToSymbol(d_emitterFrec, 		&(e_EmissionFrec), 		sizeof(const int)));
-	cudaSafeCall(cudaMemcpyToSymbol(d_emitterLength, 	&(e_Length), 			sizeof(const float)));
-	cudaSafeCall(cudaMemcpyToSymbol(d_emitterType, 		&(e_Type), 				sizeof(const int)));
+	cudaSafeCall(cudaMemcpyToSymbol(d_maxParticles, 	&(e_MaxParticles), 		sizeof(unsigned int)));
+	cudaSafeCall(cudaMemcpyToSymbol(d_emitterFrec, 		&(e_EmissionFrec), 		sizeof(int)));
+	cudaSafeCall(cudaMemcpyToSymbol(d_emitterLength, 	&(e_Length), 			sizeof(float)));
+	cudaSafeCall(cudaMemcpyToSymbol(d_emitterType, 		&(e_Type), 				sizeof(int)));
 
 
-	cudaSafeCall(cudaMemcpyToSymbol(d_constantX,		&(values::w_ConstantX), 		sizeof(const float)));
-	cudaSafeCall(cudaMemcpyToSymbol(d_constantY,		&(values::w_ConstantY), 		sizeof(const float)));
-	cudaSafeCall(cudaMemcpyToSymbol(d_constantZ,		&(values::w_ConstantZ), 		sizeof(const float)));
-	cudaSafeCall(cudaMemcpyToSymbol(d_gridSize,			&(values::g_Size), 				sizeof(const unsigned int)));
+	cudaSafeCall(cudaMemcpyToSymbol(d_constant,			&(w_Constant), 			3*sizeof(float)));
+	cudaSafeCall(cudaMemcpyToSymbol(d_gridSize,			&(w_VoxelNum), 			sizeof(unsigned int)));
 
 }
 
@@ -467,10 +468,10 @@ void CudaControler::copyConstants()
 void CudaControler::calculatePerlin()
 {
 	int perlin_blockSize = cu_BlockSize;
-	int perlin_gridSize = (int)ceil((float)(values::g_Size*values::g_Size*values::g_Size)/perlin_blockSize);
+	int perlin_gridSize = (int)ceil((float)(w_VoxelNum*w_VoxelNum*w_VoxelNum)/perlin_blockSize);
 
 	curandState* devStates;
-	cudaMalloc ( &devStates, values::g_Size*values::g_Size*values::g_Size*sizeof( curandState ) );
+	cudaMalloc ( &devStates, w_VoxelNum*w_VoxelNum*w_VoxelNum*sizeof( curandState ) );
 	
 	setupRandomPerlin<<<perlin_gridSize, perlin_blockSize>>> ( devStates, rand()%10000);
 

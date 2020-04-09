@@ -56,38 +56,6 @@
                 "isDefault": true
             },
             "problemMatcher": []
-        },
-        { 
-            "label": "testbuidl",
-            "command": "nvcc",
-            "args": ["--gpu-architecture=sm_50",
-                "-o", "bin/SIPAG.exe",
-                
-                "-Isrc/.",
-                //"src/CudaControler.cu",
-                "-x", "cu",
-                "src/Test.cpp",
-                "-Iinclude/",
-                //"-lkernel32", 
-                //"-lgdi32",  
-                //"-luser32", 
-                "-Llib/GL", 
-                "-lSOIL",
-                "-lglew32", 
-                "-lfreeglut" , 
-                "-lglu32", 
-                "-lopengl32",
-                "-lgluis"
-                //"-Llib/SFML",
-                //"-lsfml-window"
-                //"-lntdll",
-                //"-lshell32"
-            ],
-                "group": {
-                "kind": "build",
-                "isDefault": true
-            },
-            "problemMatcher": []
         }
     ]
 }

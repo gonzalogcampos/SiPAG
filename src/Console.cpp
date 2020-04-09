@@ -7,10 +7,11 @@
 
 #include <Values.h>
 
+int print_priority = 2 ;
 
 void cPrint(std::string text, int priority)
 {
-    if(priority<=values::print_priority)
+    if(priority<=print_priority)
     {
         std::cout<<text;
     }

@@ -25,7 +25,7 @@
 //Camera
 float c_Rotation = 0.f;
 float c_Distance = 10.f;
-float c_Height = 4.f;
+float c_Height = 3.f;
 //Render
 float r_BackgroundColor[3] = {0.f, 0.f, 0.f};
 //Dots Shader
@@ -41,7 +41,7 @@ float r_MaxOpacity = 1.f;
 //Particle
 float p_minSize = 1.f;                           	//Size of the particle
 float p_incSize = .05f;                 	//%per second size improves
-float p_Opacity = 1.f;                        	//Opacity of the particle
+float p_Opacity = .5f;                        	//Opacity of the particle
 float p_OpacityEvolution = .05f;              	//% per second opacity decays
 /*===============================================================*/
 /*===============================================================*/

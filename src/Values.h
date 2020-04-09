@@ -10,6 +10,9 @@
 * 
 */
 extern int cu_BlockSize;
+extern int print_priority;
+extern bool GPU;
+
 
 /*
 *
@@ -52,35 +55,16 @@ extern float p_InitVelocity[3];                    //Init velocity
 extern float p_RInitVelocity[3];                   //Random init velocity
 extern float p_VelocityDecay;                      //% per second velocity decays
 
+/*
+*
+* -------- WIND --------
+* 
+*/
 
-
-namespace values
-{
-
-
-        const bool run = false;
-        const int print_priority = 2 ;
-        const int sys_FPS = 60;
-        const bool sys_Double = false;
-
-        /*
-            *
-            * -------- WIND --------
-            * 
-            */
-
-        const unsigned int g_Size = 256;           //Grid Size
-
-        const float w_ConstantX = 0.f;             //Constant velocity X
-        const float w_ConstantY = 0.03f;           //Constant velocity Y
-        const float w_ConstantZ = 0.f;             //Constant velocity Z
-        //Wind 1
-        const unsigned int w_Seed = 1;             //Wind 1 initial seed
-        const unsigned int w_SeedVariation = 0;    //Wind 1 seed valiarion per second
-        const float w_TurbulenceSize = 1.f;        //Wind 1 turbulence size
-        const float w_Velocity = 1.f;              //Wind 1 velocity
-
-
-
-
-}
+extern int w_VoxelNum;           //Grid Size
+extern float w_Constant[3];
+//Wind 1
+const unsigned int w_Seed = 1;             //Wind 1 initial seed
+const unsigned int w_SeedVariation = 0;    //Wind 1 seed valiarion per second
+const float w_TurbulenceSize = 1.f;        //Wind 1 turbulence size
+const float w_Velocity = 1.f;              //Wind 1 velocity

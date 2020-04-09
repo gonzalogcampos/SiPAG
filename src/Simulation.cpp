@@ -19,6 +19,12 @@
 #pragma comment(lib, "legacy_stdio_definitions")
 #endif
 
+
+
+bool GPU = true;
+
+
+
 CudaControler *cudaControler;
 Render* render;
 OClock oclock;
@@ -31,21 +37,17 @@ int start(int argv, char **argc)
     cPrint("SiPAG | Cuda & OpenGL Particle simulatior\nBuild: v1.0 2020\nMIT License Copyright (c) Gonzalo G. Campos 2020\n",1);
 
 
-    cudaControler = CudaControler::getInstance();
-    render = Render::getInstance();
+    cudaControler   = CudaControler::getInstance();
+    render          = Render::getInstance();
 
     if(cudaControler->testDevices()!=0)
-    { 
         return 1;
-    }
-
 
     if (!glfwInit())
         return 1;
 
     std::string title = "SiPAG | " + cudaControler->getDevice();
-    GLFWwindow* window;
-	window = glfwCreateWindow(1000, 1000, title.c_str(), NULL, NULL);
+    GLFWwindow* window = glfwCreateWindow(1000, 1000, title.c_str(), NULL, NULL);
 	if (!window) exit(EXIT_FAILURE);
 
 	glfwMakeContextCurrent(window);
@@ -64,7 +66,7 @@ int start(int argv, char **argc)
     ImGui::StyleColorsDark();
     // Setup Platform/Renderer bindings
     ImGui_ImplGlfw_InitForOpenGL(window, true);
-    ImGui_ImplOpenGL3_Init("#version 130");
+    ImGui_ImplOpenGL3_Init("#version 450");
 
     /*=================================================*/
     /*=================================================*/
@@ -72,7 +74,7 @@ int start(int argv, char **argc)
 
     //Calculate needed memory on device
     int particles_bytes = e_MaxParticles * 8 * 4;
-    int perlin_bytes = values::g_Size*values::g_Size*values::g_Size * 3 * 2 * 4;
+    int perlin_bytes = w_VoxelNum*w_VoxelNum*w_VoxelNum * 3 * 2 * 4;
     int bytes = particles_bytes + perlin_bytes;
     cPrint("Memory allocated in device: " + cString(bytes/1048576) + " Mb\n", 2);
 
@@ -81,9 +83,6 @@ int start(int argv, char **argc)
     cudaControler->start();
     oclock.start();
     render->start();
-
-    if(createMenu()!=0)
-        return 1;
 
     while (!glfwWindowShouldClose(window)) {
         
@@ -101,19 +100,11 @@ void step(void)
     double dt = oclock.step();
     cudaControler->step(dt);
     render->draw(dt);
-    ImGui_ImplOpenGL3_NewFrame();
-    ImGui_ImplGlfw_NewFrame();
 	GUIupdate();
-    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 }
 
 void close(void)
 {
     cudaControler->close();
     render->close();
-}
-
-int createMenu()
-{
-    return 0;
 }

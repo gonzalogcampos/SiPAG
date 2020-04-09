@@ -1,6 +1,8 @@
 #include <GUI.h>
 
 #include <imGUI/imgui.h>
+#include <imGUI/imgui_impl_glfw.h>
+#include <imGUI/imgui_impl_opengl3.h>
 #include <Values.h>
 #include <CudaControler.h>
 #include <Render.h>
@@ -15,34 +17,41 @@ static bool defShader = true;
 
 void GUIupdate()
 {
+    ImGui_ImplOpenGL3_NewFrame();
+    ImGui_ImplGlfw_NewFrame();
+
     ImGui::NewFrame();
 
     ImGui::Begin("Control Panel");
     ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-    ImGui::Separator();
+    
     gui_System();
-    ImGui::Separator();
     gui_Emitter();
-    ImGui::Separator();
     gui_Render();
-    ImGui::Separator();
     gui_Particle();
-    ImGui::Separator();
     gui_Wind();
 
     ImGui::End();
     ImGui::Render();
+
+    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
 }
 
 void gui_System()
 {
+    ImGui::Separator();
+    ImGui::BeginGroup();
     ImGui::Text("System");
     ImGui::InputInt("Cuda Block Size", &cu_BlockSize);
+    ImGui::EndGroup();
+
 }
 
 
 void gui_Emitter()
 {
+    ImGui::Separator();
     ImGui::Text("Emitter");
     ImGui::InputInt("Max particles", &MaxParticles);
     ImGui::SameLine();
@@ -78,6 +87,7 @@ void gui_Emitter()
 
 void gui_Particle()
 {
+    ImGui::Separator();
     ImGui::Text("Particle");
     ImGui::SliderFloat("Life",                  &p_LifeTime,            0.f,    5.f);
     ImGui::SliderFloat("Random Life",           &p_RLifeTime,           0.f,    5.f);
@@ -90,14 +100,12 @@ void gui_Particle()
 
 void gui_Render()
 {
+    ImGui::Separator();
     ImGui::Text("Render");
-
     ImGui::SliderFloat("Camera Rotation", &c_Rotation, 0.0f, 6.3f);            // Edit 1 float using a slider from 0.0f to 1.0f
     ImGui::SliderFloat("Camera Distance", &c_Distance, 0.0f, 100.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
     ImGui::SliderFloat("Camera Height", &c_Height, -20.0f, 20.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
-
     ImGui::ColorEdit3("Background Color", r_BackgroundColor);
-
 
     if(ImGui::Button("Change Shader"))
     {   
@@ -120,7 +128,9 @@ void gui_Render()
 
 void gui_Wind()
 {
-
+    ImGui::Separator();
+    ImGui::Text("Render");
+    ImGui::SliderFloat3("Constant Wind",w_Constant, -5.f, 5.f);
 }
 
 
