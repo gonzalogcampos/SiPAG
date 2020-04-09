@@ -15,7 +15,8 @@
 #include <curand.h>
 #include <curand_kernel.h>
 #include <cuda_gl_interop.h>
-//#include <cuda_noise.cuh>
+
+#include <cuda_noise.cuh>
 
 
 #include <CudaControler.h>
@@ -172,6 +173,15 @@ __global__ void kernelParticle(float *x, float *y, float *z,
 			vy[id] = vy[id] + d_constant[1];
 			vz[id] = vz[id] + d_constant[2];
 
+			//Wind perlin Big
+			float pbx = repeaterPerlin(make_float3(x[id], y[id], z[id]), .5f, 2989, 3, 10, .3f);
+			float pby = 0.f*repeaterPerlin(make_float3(x[id], y[id], z[id]), .5f, 841126, 3, 10, .3f);
+			float pbz = repeaterPerlin(make_float3(x[id], y[id], z[id]), .5f, 189277, 3, 10, .3f);
+
+			vx[id] = vx[id] + pbx;
+			vy[id] = vy[id] + pby;
+			vz[id] = vz[id] + pbz;
+
 			//Position addition
 			x[id] += vx[id]*dt;
 			y[id] += vy[id]*dt;
@@ -185,6 +195,7 @@ __global__ void kernelParticle(float *x, float *y, float *z,
 	}
 }
 
+/*
 __global__ void setupRandomPerlin(curandState * state, unsigned long seed)
 {
 	unsigned int idx = blockIdx.x*blockDim.x+threadIdx.x;
@@ -226,6 +237,7 @@ __global__ void kernelPerlin(float *d_perlin_x, float *d_perlin_y, float *d_perl
 
 
 }
+*/
 
 int CudaControler::testDevices()
 {
@@ -474,11 +486,11 @@ void CudaControler::calculatePerlin()
 	curandState* devStates;
 	cudaMalloc ( &devStates, w_VoxelNum*w_VoxelNum*w_VoxelNum*sizeof( curandState ) );
 	
-	setupRandomPerlin<<<perlin_gridSize, perlin_blockSize>>> ( devStates, rand()%10000);
+	//setupRandomPerlin<<<perlin_gridSize, perlin_blockSize>>> ( devStates, rand()%10000);
 
-	addRandomPerlin<<<perlin_gridSize, perlin_blockSize>>>(d_perlin_x, d_perlin_y, d_perlin_z, devStates);
+	//addRandomPerlin<<<perlin_gridSize, perlin_blockSize>>>(d_perlin_x, d_perlin_y, d_perlin_z, devStates);
 
-	kernelPerlin<<<perlin_gridSize, perlin_blockSize>>>(d_perlin_x, d_perlin_y, d_perlin_z);
+	///kernelPerlin<<<perlin_gridSize, perlin_blockSize>>>(d_perlin_x, d_perlin_y, d_perlin_z);
 	
 	cudaFree(devStates);
 }
