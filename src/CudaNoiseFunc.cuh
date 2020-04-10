@@ -31,9 +31,9 @@ __device__ float mapToSigned(float input)
 
 
 // Random unsigned int for a grid coordinate [0, MAXUINT]
-__device__ unsigned int randomIntGrid(float x, float y, float z, float seed = 0.0f)
+__device__ unsigned int randomIntGrid(float x, float y, float z, float t, float seed = 0.0f)
 {
-	return hash((unsigned int)(x * 1723.0f + y * 93241.0f + z * 149812.0f + 3824 + seed));
+	return hash((unsigned int)(x * 1723.0f + y * 93241.0f + z * 149812.0f + t * 892.f + 3824 + seed));
 }
 
 
@@ -47,26 +47,42 @@ __device__  float lerp(float a, float b, float ratio)
 
 
 // Fast gradient function for gradient noise
-__device__ float grad(int hash, float x, float y, float z)
+__device__ float grad(int hash, float x, float y, float z, float t)
 {
-	switch (hash & 0xF)
+	switch (hash & 0x1f)
 	{
-	case 0x0: return x + y;
-	case 0x1: return -x + y;
-	case 0x2: return x - y;
-	case 0x3: return -x - y;
-	case 0x4: return x + z;
-	case 0x5: return -x + z;
-	case 0x6: return x - z;
-	case 0x7: return -x - z;
-	case 0x8: return y + z;
-	case 0x9: return -y + z;
-	case 0xA: return y - z;
-	case 0xB: return -y - z;
-	case 0xC: return y + x;
-	case 0xD: return -y + z;
-	case 0xE: return y - x;
-	case 0xF: return -y - z;
+	case 0x00: return x + y;
+	case 0x01: return -x + y;
+	case 0x02: return x - y;
+	case 0x03: return -x - y;
+	case 0x04: return x + z;
+	case 0x05: return -x + z;
+	case 0x06: return x - z;
+	case 0x07: return -x - z;
+	case 0x08: return y + z;
+	case 0x09: return -y + z;
+	case 0x0A: return y - z;
+	case 0x0B: return -y - z;
+	case 0x0C: return -y + z;
+	case 0x0D: return -y - z;
+	case 0x0E: return x + t;
+	case 0x0F: return -x + t;
+	case 0x10: return x - t;
+	case 0x11: return -x - t;
+	case 0x12: return y + t;
+	case 0x13: return -y + t;
+	case 0x14: return y - t;
+	case 0x15: return -y - t;
+	case 0x16: return z + t;
+	case 0x17: return -z + t;
+	case 0x18: return z - t;
+	case 0x19: return -z - t;
+	case 0x1A: return x + y;
+	case 0x1B: return -x + y;
+	case 0x1C: return x - y;
+	case 0x1D: return -x - y;
+	case 0x1E: return x + z;
+	case 0x1F: return -x + z;
 	default: return 0; // never happens
 	}
 }
@@ -79,7 +95,7 @@ __device__ float fade(float t)
 
 
 // Perlin gradient noise
-__device__ float perlinNoise(float3 pos, float scale, int seed)
+__device__ float perlinNoise(float3 pos, float t, float scale, int seed)
 {
 	float fseed = (float)seed;
 
@@ -91,37 +107,57 @@ __device__ float perlinNoise(float3 pos, float scale, int seed)
 	float ix = floorf(pos.x);
 	float iy = floorf(pos.y);
 	float iz = floorf(pos.z);
+	float it = floorf(t);
 
 	// current position within unit cube
 	pos.x -= ix;
 	pos.y -= iy;
 	pos.z -= iz;
+	t -= it;
 
 	// adjust for fade
 	float u = fade(pos.x);
 	float v = fade(pos.y);
 	float w = fade(pos.z);
+	float k = fade(t);
 
 	// influence values
-	float i000 = grad(randomIntGrid(ix, iy, iz, fseed), pos.x, pos.y, pos.z);
-	float i100 = grad(randomIntGrid(ix + 1.0f, iy, iz, fseed), pos.x - 1.0f, pos.y, pos.z);
-	float i010 = grad(randomIntGrid(ix, iy + 1.0f, iz, fseed), pos.x, pos.y - 1.0f, pos.z);
-	float i110 = grad(randomIntGrid(ix + 1.0f, iy + 1.0f, iz, fseed), pos.x - 1.0f, pos.y - 1.0f, pos.z);
-	float i001 = grad(randomIntGrid(ix, iy, iz + 1.0f, fseed), pos.x, pos.y, pos.z - 1.0f);
-	float i101 = grad(randomIntGrid(ix + 1.0f, iy, iz + 1.0f, fseed), pos.x - 1.0f, pos.y, pos.z - 1.0f);
-	float i011 = grad(randomIntGrid(ix, iy + 1.0f, iz + 1.0f, fseed), pos.x, pos.y - 1.0f, pos.z - 1.0f);
-	float i111 = grad(randomIntGrid(ix + 1.0f, iy + 1.0f, iz + 1.0f, fseed), pos.x - 1.0f, pos.y - 1.0f, pos.z - 1.0f);
+	float i0000 = grad(randomIntGrid(ix, iy, iz, t, fseed), pos.x, pos.y, pos.z, t);
+	float i1000 = grad(randomIntGrid(ix + 1.0f, iy, iz, t, fseed), pos.x - 1.0f, pos.y, pos.z, t);
+	float i0100 = grad(randomIntGrid(ix, iy + 1.0f, iz, t, fseed), pos.x, pos.y - 1.0f, pos.z, t);
+	float i1100 = grad(randomIntGrid(ix + 1.0f, iy + 1.0f, iz, t, fseed), pos.x - 1.0f, pos.y - 1.0f, pos.z, t);
+	float i0010 = grad(randomIntGrid(ix, iy, iz + 1.0f, t, fseed), pos.x, pos.y, pos.z - 1.0f, t);
+	float i1010 = grad(randomIntGrid(ix + 1.0f, iy, iz + 1.0f, t, fseed), pos.x - 1.0f, pos.y, pos.z - 1.0f, t);
+	float i0110 = grad(randomIntGrid(ix, iy + 1.0f, iz + 1.0f, t, fseed), pos.x, pos.y - 1.0f, pos.z - 1.0f, t);
+	float i1110 = grad(randomIntGrid(ix + 1.0f, iy + 1.0f, iz + 1.0f, t, fseed), pos.x - 1.0f, pos.y - 1.0f, pos.z - 1.0f, t);
+	float i0001 = grad(randomIntGrid(ix, iy, iz, t + 1.0f, fseed), pos.x, pos.y, pos.z, t - 1.0f);
+	float i1001 = grad(randomIntGrid(ix + 1.0f, iy, iz, t + 1.0f, fseed), pos.x - 1.0f, pos.y, pos.z, t - 1.0f);
+	float i0101 = grad(randomIntGrid(ix, iy + 1.0f, iz, t + 1.0f, fseed), pos.x, pos.y - 1.0f, pos.z, t - 1.0f);
+	float i1101 = grad(randomIntGrid(ix + 1.0f, iy + 1.0f, iz, t + 1.0f, fseed), pos.x - 1.0f, pos.y - 1.0f, pos.z, t - 1.0f);
+	float i0011 = grad(randomIntGrid(ix, iy, iz + 1.0f, t + 1.0f, fseed), pos.x, pos.y, pos.z - 1.0f, t - 1.0f);
+	float i1011 = grad(randomIntGrid(ix + 1.0f, iy, iz + 1.0f, t + 1.0f, fseed), pos.x - 1.0f, pos.y, pos.z - 1.0f, t - 1.0f);
+	float i0111 = grad(randomIntGrid(ix, iy + 1.0f, iz + 1.0f, t + 1.0f, fseed), pos.x, pos.y - 1.0f, pos.z - 1.0f, t - 1.0f);
+	float i1111 = grad(randomIntGrid(ix + 1.0f, iy + 1.0f, iz + 1.0f, t + 1.0f, fseed), pos.x - 1.0f, pos.y - 1.0f, pos.z - 1.0f, t - 1.0f);
 
 	// interpolation
-	float x00 = lerp(i000, i100, u);
-	float x10 = lerp(i010, i110, u);
-	float x01 = lerp(i001, i101, u);
-	float x11 = lerp(i011, i111, u);
+	float x000 = lerp(i0000, i1000, u);
+	float x100 = lerp(i0100, i1100, u);
+	float x010 = lerp(i0010, i1010, u);
+	float x110 = lerp(i0110, i1110, u);
+	float x001 = lerp(i0001, i1001, u);
+	float x101 = lerp(i0101, i1101, u);
+	float x011 = lerp(i0011, i1011, u);
+	float x111 = lerp(i0111, i1111, u);
 
-	float y0 = lerp(x00, x10, v);
-	float y1 = lerp(x01, x11, v);
+	float y00 = lerp(x000, x100, v);
+	float y10 = lerp(x010, x110, v);
+	float y01 = lerp(x001, x101, v);
+	float y11 = lerp(x011, x111, v);
 
-	float avg = lerp(y0, y1, w);
+	float z0 = lerp(y00, y10, w);
+	float z1 = lerp(y01, y11, w);
+
+	float avg = lerp(z0, z1, k);
 
 	return avg;
 }
@@ -129,14 +165,14 @@ __device__ float perlinNoise(float3 pos, float scale, int seed)
 // Derived noise functions
 
 // Fast function for fBm using perlin noise
-__device__ float repeaterPerlin(float3 pos, float scale, int seed, int n, float lacunarity, float decay)
+__device__ float repeaterPerlin(float3 pos, float time, float scale, int seed, int n, float lacunarity, float decay)
 {
 	float acc = 0.0f;
 	float amp = 1.0f;
 
 	for (int i = 0; i < n; i++)
 	{
-		acc += perlinNoise(make_float3(pos.x * scale, pos.y * scale, pos.z * scale), 1.0f, seed * (i + 3)) * amp;
+		acc += perlinNoise(make_float3(pos.x * scale, pos.y * scale, pos.z * scale), time, 1.0f, seed * (i + 3)) * amp;
 		scale *= lacunarity;
 		amp *= decay;
 	}
@@ -146,14 +182,14 @@ __device__ float repeaterPerlin(float3 pos, float scale, int seed, int n, float 
 
 // Fast function for fBm using perlin absolute noise
 // Originally called "turbulence", this method takes the absolute value of each octave before adding
-__device__ float repeaterPerlinAbs(float3 pos, float scale, int seed, int n, float lacunarity, float decay)
+__device__ float repeaterPerlinAbs(float3 pos, float time, float scale, int seed, int n, float lacunarity, float decay)
 {
 	float acc = 0.0f;
 	float amp = 1.0f;
 
 	for (int i = 0; i < n; i++)
 	{
-		acc += fabsf(perlinNoise(make_float3(pos.x * scale, pos.y * scale, pos.z * scale), 1.0f, seed)) * amp;
+		acc += fabsf(perlinNoise(make_float3(pos.x * scale, pos.y * scale, pos.z * scale), time, 1.0f, seed)) * amp;
 		scale *= lacunarity;
 		amp *= decay;
 	}
@@ -164,24 +200,24 @@ __device__ float repeaterPerlinAbs(float3 pos, float scale, int seed, int n, flo
 
 // Generic turbulence function
 // Uses a first pass of noise to offset the input vectors for the second pass
-__device__ float turbulence(float3 pos, float scaleIn, float scaleOut, int seed, float strength)
+__device__ float turbulence(float3 pos, float time, float scaleIn, float scaleOut, int seed, float strength)
 {
 
-	pos.x += perlinNoise(pos, scaleIn, seed ^ 0x74827384) * strength;
-	pos.y += perlinNoise(pos, scaleIn, seed ^ 0x10938478) * strength;
-	pos.z += perlinNoise(pos, scaleIn, seed ^ 0x62723883) * strength;
+	pos.x += perlinNoise(pos, time, scaleIn, seed ^ 0x74827384) * strength;
+	pos.y += perlinNoise(pos, time, scaleIn, seed ^ 0x10938478) * strength;
+	pos.z += perlinNoise(pos, time, scaleIn, seed ^ 0x62723883) * strength;
 
-	return perlinNoise(pos, scaleOut, seed);
+	return perlinNoise(pos, time, scaleOut, seed);
 
 	return 0.0f;
 }
 
 // Turbulence using repeaters for the first and second pass
-__device__ float repeaterTurbulence(float3 pos, float scaleIn, float scaleOut, int seed, float strength, int n)
+__device__ float repeaterTurbulence(float3 pos, float time, float scaleIn, float scaleOut, int seed, float strength, int n)
 {
-	pos.x += (repeaterPerlin(make_float3(pos.x, pos.y, pos.z), scaleIn, seed ^ 0x41728394, n, 2.0f, 0.5f)) * strength;
-	pos.y += (repeaterPerlin(make_float3(pos.x, pos.y, pos.z), scaleIn, seed ^ 0x72837263, n, 2.0f, 0.5f)) * strength;
-	pos.z += (repeaterPerlin(make_float3(pos.x, pos.y, pos.z), scaleIn, seed ^ 0x26837363, n, 2.0f, 0.5f)) * strength;
+	pos.x += (repeaterPerlin(make_float3(pos.x, pos.y, pos.z), time, scaleIn, seed ^ 0x41728394, n, 2.0f, 0.5f)) * strength;
+	pos.y += (repeaterPerlin(make_float3(pos.x, pos.y, pos.z), time, scaleIn, seed ^ 0x72837263, n, 2.0f, 0.5f)) * strength;
+	pos.z += (repeaterPerlin(make_float3(pos.x, pos.y, pos.z), time, scaleIn, seed ^ 0x26837363, n, 2.0f, 0.5f)) * strength;
 
-	return repeaterPerlin(pos, scaleOut, seed ^ 0x3f821dab, n, 2.0f, 0.5f);
+	return repeaterPerlin(pos, time, scaleOut, seed ^ 0x3f821dab, n, 2.0f, 0.5f);
 }

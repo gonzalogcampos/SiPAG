@@ -198,10 +198,11 @@ __global__ void kernelParticle(float *x, float *y, float *z,
 			//Wind perlin Big
 			if(d_1[0])
 			{
-				float3 pos = make_float3(x[id], y[id] + d_time[0]*d_timeEv[0], z[id]);
-				float pbx = d_1Amp[0]*repeaterPerlin(pos, d_1Size[0], 2989,   d_1n[0], d_1lacunarity[0], d_1decay[0]);
-				float pby = d_1Amp[1]*repeaterPerlin(pos, d_1Size[0], 841126, d_1n[0], d_1lacunarity[0], d_1decay[0]);
-				float pbz = d_1Amp[2]*repeaterPerlin(pos, d_1Size[0], 189277, d_1n[0], d_1lacunarity[0], d_1decay[0]);
+				float3 pos = make_float3(x[id], y[id], z[id]);
+				float time = d_time[0]*d_timeEv[0];
+				float pbx = d_1Amp[0]*repeaterPerlin(pos, time, d_1Size[0], 2989,   d_1n[0], d_1lacunarity[0], d_1decay[0]);
+				float pby = d_1Amp[1]*repeaterPerlin(pos, time, d_1Size[0], 841126, d_1n[0], d_1lacunarity[0], d_1decay[0]);
+				float pbz = d_1Amp[2]*repeaterPerlin(pos, time, d_1Size[0], 189277, d_1n[0], d_1lacunarity[0], d_1decay[0]);
 
 				vx[id] = vx[id] + pbx;
 				vy[id] = vy[id] + pby;
@@ -210,9 +211,11 @@ __global__ void kernelParticle(float *x, float *y, float *z,
 			
 			if(d_2[0])
 			{
-				float pbx = d_2Amp[0]*repeaterPerlin(make_float3(x[id], y[id], z[id]), d_2Size[0], 2989,   d_2n[0], d_2lacunarity[0], d_2decay[0]);
-				float pby = d_2Amp[1]*repeaterPerlin(make_float3(x[id], y[id], z[id]), d_2Size[0], 841126, d_2n[0], d_2lacunarity[0], d_2decay[0]);
-				float pbz = d_2Amp[2]*repeaterPerlin(make_float3(x[id], y[id], z[id]), d_2Size[0], 189277, d_2n[0], d_2lacunarity[0], d_2decay[0]);
+				float3 pos = make_float3(x[id], y[id], z[id]);
+				float time = d_time[0]*d_timeEv[0];
+				float pbx = d_2Amp[0]*repeaterPerlin(pos, time, d_2Size[0], 2989,   d_2n[0], d_2lacunarity[0], d_2decay[0]);
+				float pby = d_2Amp[1]*repeaterPerlin(pos, time, d_2Size[0], 841126, d_2n[0], d_2lacunarity[0], d_2decay[0]);
+				float pbz = d_2Amp[2]*repeaterPerlin(pos, time, d_2Size[0], 189277, d_2n[0], d_2lacunarity[0], d_2decay[0]);
 
 				vx[id] = vx[id] + pbx;
 				vy[id] = vy[id] + pby;
