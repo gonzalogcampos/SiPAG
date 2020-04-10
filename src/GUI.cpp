@@ -153,7 +153,7 @@ void gui_Wind()
         ImGui::SliderFloat("1 Size", &w_1Size, 0.f, 2.f);
         ImGui::SliderFloat("1 Lacunarity", &w_1lacunarity, 0.f, 3.f);
         ImGui::SliderFloat("1 Decay", &w_1decay, 0.f, 1.f);
-        ImGui::SliderInt("1 N iterations", &w_1n, 0.f, 10.f);
+        ImGui::SliderInt("1 Octaves", &w_1n, 0.f, 10.f);
     }
 
     ImGui::Checkbox("Wind noise 2", &w_2);
@@ -163,7 +163,7 @@ void gui_Wind()
         ImGui::SliderFloat("2 Size", &w_2Size, 0.f, 2.f);
         ImGui::SliderFloat("2 Lacunarity", &w_2lacunarity, 0.f, 3.f);
         ImGui::SliderFloat("2 Decay", &w_2decay, 0.f, 1.f);
-        ImGui::SliderInt("2 N iterations", &w_2n, 0.f, 10.f);
+        ImGui::SliderInt("2 Octaves", &w_2n, 0.f, 10.f);
     }
 
     
