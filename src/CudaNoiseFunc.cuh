@@ -1,6 +1,3 @@
-// cudaNoise
-// Library of common 3D noise functions for CUDA kernels
-
 #pragma once
 
 #include <cuda_runtime.h>
@@ -36,15 +33,12 @@ __device__ unsigned int randomIntGrid(float x, float y, float z, float t, float 
 	return hash((unsigned int)(x * 1723.0f + y * 93241.0f + z * 149812.0f + t * 892.f + 3824 + seed));
 }
 
-
 // Helper functions for noise
-
 // Linearly interpolate between two float values
 __device__  float lerp(float a, float b, float ratio)
 {
 	return a * (1.0f - ratio) + b * ratio;
 }
-
 
 // Fast gradient function for gradient noise
 __device__ float grad(int hash, float x, float y, float z, float t)
@@ -92,7 +86,6 @@ __device__ float fade(float t)
 {
 	return t * t * t * (t * (t * 6.0f - 15.0f) + 10.0f);     // 6t^5 - 15t^4 + 10t^3
 }
-
 
 // Perlin gradient noise
 __device__ float perlinNoise(float3 pos, float t, float scale, int seed)
@@ -162,8 +155,6 @@ __device__ float perlinNoise(float3 pos, float t, float scale, int seed)
 	return avg;
 }
 
-// Derived noise functions
-
 // Fast function for fBm using perlin noise
 __device__ float repeaterPerlin(float3 pos, float time, float scale, int seed, int n, float lacunarity, float decay)
 {
@@ -178,46 +169,4 @@ __device__ float repeaterPerlin(float3 pos, float time, float scale, int seed, i
 	}
 
 	return acc;
-}
-
-// Fast function for fBm using perlin absolute noise
-// Originally called "turbulence", this method takes the absolute value of each octave before adding
-__device__ float repeaterPerlinAbs(float3 pos, float time, float scale, int seed, int n, float lacunarity, float decay)
-{
-	float acc = 0.0f;
-	float amp = 1.0f;
-
-	for (int i = 0; i < n; i++)
-	{
-		acc += fabsf(perlinNoise(make_float3(pos.x * scale, pos.y * scale, pos.z * scale), time, 1.0f, seed)) * amp;
-		scale *= lacunarity;
-		amp *= decay;
-	}
-
-	// Map the noise back to the standard expected range [-1, 1]
-	return mapToSigned(acc);
-}
-
-// Generic turbulence function
-// Uses a first pass of noise to offset the input vectors for the second pass
-__device__ float turbulence(float3 pos, float time, float scaleIn, float scaleOut, int seed, float strength)
-{
-
-	pos.x += perlinNoise(pos, time, scaleIn, seed ^ 0x74827384) * strength;
-	pos.y += perlinNoise(pos, time, scaleIn, seed ^ 0x10938478) * strength;
-	pos.z += perlinNoise(pos, time, scaleIn, seed ^ 0x62723883) * strength;
-
-	return perlinNoise(pos, time, scaleOut, seed);
-
-	return 0.0f;
-}
-
-// Turbulence using repeaters for the first and second pass
-__device__ float repeaterTurbulence(float3 pos, float time, float scaleIn, float scaleOut, int seed, float strength, int n)
-{
-	pos.x += (repeaterPerlin(make_float3(pos.x, pos.y, pos.z), time, scaleIn, seed ^ 0x41728394, n, 2.0f, 0.5f)) * strength;
-	pos.y += (repeaterPerlin(make_float3(pos.x, pos.y, pos.z), time, scaleIn, seed ^ 0x72837263, n, 2.0f, 0.5f)) * strength;
-	pos.z += (repeaterPerlin(make_float3(pos.x, pos.y, pos.z), time, scaleIn, seed ^ 0x26837363, n, 2.0f, 0.5f)) * strength;
-
-	return repeaterPerlin(pos, time, scaleOut, seed ^ 0x3f821dab, n, 2.0f, 0.5f);
 }

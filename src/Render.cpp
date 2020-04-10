@@ -24,25 +24,22 @@
 /*===============================================================*/
 //Camera
 float c_Rotation = 0.f;
-float c_Distance = 15.f;
-float c_Height = 3.f;
+float c_Distance = 35.f;
+float c_Height = 10.f;
 //Render
 float r_BackgroundColor[3] = {0.f, 0.f, 0.f};
 //Dots Shader
 float r_DotsColor[4] = {1.f, 0.f, 0.f, 1.f};
-float r_WiresColor[4] = {0.f, 0.f, 1.f, 1.f};
 //Normal shader
 char* r_Texture = "res/text.png";
 bool r_RasAlpha = true;
 float r_DefaultColor[3] = {1.f, 1.f, 1.f};
-float r_TimeOpacityGrowing = .1f;
-float r_TimeOpacityDecreasing = .2f;
-float r_MaxOpacity = 1.f;
+float r_TimeOpacityGrowing = 0.4f;
+float r_TimeOpacityDecreasing = .15f;
+float r_MaxOpacity = 0.1f;
 //Particle
-float p_minSize = 1.f;                           	//Size of the particle
-float p_incSize = .05f;                 	//%per second size improves
-float p_Opacity = .5f;                        	//Opacity of the particle
-float p_OpacityEvolution = .05f;              	//% per second opacity decays
+float p_minSize = 1.3f;                           	//Size of the particle
+float p_incSize = .5f;                 	//%per second size improves
 /*===============================================================*/
 /*===============================================================*/
 

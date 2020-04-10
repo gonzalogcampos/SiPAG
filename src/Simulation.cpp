@@ -47,7 +47,7 @@ int start(int argv, char **argc)
         return 1;
 
     std::string title = "SiPAG | " + cudaControler->getDevice();
-    GLFWwindow* window = glfwCreateWindow(1000, 1000, title.c_str(), NULL, NULL);
+    GLFWwindow* window = glfwCreateWindow(1080, 720, title.c_str(), NULL, NULL);
 	if (!window) exit(EXIT_FAILURE);
 
 	glfwMakeContextCurrent(window);
@@ -70,16 +70,7 @@ int start(int argv, char **argc)
 
     /*=================================================*/
     /*=================================================*/
-
-
-    //Calculate needed memory on device
-    int particles_bytes = e_MaxParticles * 8 * 4;
-    int perlin_bytes = w_VoxelNum*w_VoxelNum*w_VoxelNum * 3 * 2 * 4;
-    int bytes = particles_bytes + perlin_bytes;
-    cPrint("Memory allocated in device: " + cString(bytes/1048576) + " Mb\n", 2);
-
-
-    
+  
     cudaControler->start();
     oclock.start();
     render->start();

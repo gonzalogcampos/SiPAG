@@ -21,9 +21,7 @@ class CudaControler
         void close();
         void resize();
         int testDevices();
-        void calculatePerlin();
         std::string getDevice();
-        //void reserveGrid();
         void conectBuffers(unsigned int bufferX,unsigned int bufferY, unsigned int bufferZ, 
                             unsigned int bufferVX, unsigned int bufferVY, unsigned int bufferVZ, 
                             unsigned int bufferLT, unsigned int bufferLR);
@@ -39,9 +37,6 @@ class CudaControler
         void copyConstants();
         
 		float *h_resource;    //host resource for  copy buffers
-
-        float *d_perlin_x, *d_perlin_y, *d_perlin_z; //Perlin noise matrix
-
 
         //If simple precision values we will use theese
         float *d_x_s;	    //position x

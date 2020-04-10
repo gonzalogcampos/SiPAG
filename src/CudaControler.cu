@@ -30,36 +30,35 @@
 //SYSTEM
 int 	cu_BlockSize = 1024;
 //EMITTER
-float 	e_Length = 1.f;                        	//Emitter radious
+float 	e_Length = .8f;                        	//Emitter radious
 int 	e_Type = 0;                        			//Emitter Type
 int 	e_EmissionFrec = 100;            			//In 1/1000
 int 	e_MaxParticles = 30000;           	//Max Particles
 //PARTICLES
-float 	p_LifeTime = 2.f;                       	//Life of the particle in seconds
-float 	p_RLifeTime = 0.2f;                     	//% of random in life
+float 	p_LifeTime = 3.f;                       	//Life of the particle in seconds
+float 	p_RLifeTime = 0.5f;                     	//% of random in life
 
-float 	p_InitVelocity[3] = {0.0f, 1.5f, 0.0f}; 	//Z init velocity
+float 	p_InitVelocity[3] = {0.0f, 1.0f, 0.0f}; 	//Z init velocity
 float 	p_RInitVelocity[3] = {0.5f, 0.5f, 0.5f}; 	//Z init velocity
 
-float 	p_VelocityDecay = .3f;                  	//% per second velocity decays
+float 	p_VelocityDecay = 1.0f;                  	//% per second velocity decays
 //WIND
 
 float 	currentTime = 0.f;
-float 	timeEv = 0.f;
+float 	timeEv = 1.f;
 
-int 	w_VoxelNum = 256; 
-float 	w_Constant[3] = {0.f, 0.03f, 0.f};
+float 	w_Constant[3] = {0.2f, 0.2f, 0.f};
 
 bool	w_1 = true;
-int 	w_1n = 3;
+int 	w_1n = 4;
 float 	w_1Amp[3] = {1.f, 1.f, 1.f};
-float 	w_1Size = 1.f;
-float 	w_1lacunarity = 1.f;
-float 	w_1decay = 1.f;
+float 	w_1Size = .2f;
+float 	w_1lacunarity = .25f;
+float 	w_1decay = 0.2f;
 
-bool	w_2 = false;
+bool	w_2 = true;
 int 	w_2n = 3;
-float 	w_2Amp[3] = {1.f, 1.f, 1.f};
+float 	w_2Amp[3] = {.4f, .4f, .4f};
 float 	w_2Size = 1.f;
 float 	w_2lacunarity = 1.f;
 float 	w_2decay = 1.f;
@@ -235,50 +234,6 @@ __global__ void kernelParticle(float *x, float *y, float *z,
 	}
 }
 
-/*
-__global__ void setupRandomPerlin(curandState * state, unsigned long seed)
-{
-	unsigned int idx = blockIdx.x*blockDim.x+threadIdx.x;
-	unsigned int idy = blockIdx.y*blockDim.y+threadIdx.y;
-	unsigned int idz = blockIdx.z*blockDim.z+threadIdx.z;
-
-	if(idx>d_gridSize[0] || idy>d_gridSize[0] || idz>d_gridSize[0])
-		return;
-
-	unsigned int id = idx + idy*d_gridSize[0] + idz*d_gridSize[0]*d_gridSize[0];
-
-	curand_init ( seed, id, 0, &state[idx]);
-}
-
-__global__ void addRandomPerlin(float *d_perlin_x, float *d_perlin_y, float *d_perlin_z, curandState* state)
-{
-	unsigned int idx = blockIdx.x*blockDim.x+threadIdx.x;
-	unsigned int idy = blockIdx.y*blockDim.y+threadIdx.y;
-	unsigned int idz = blockIdx.z*blockDim.z+threadIdx.z;
-
-	if(idx>d_gridSize[0] || idy>d_gridSize[0] || idz>d_gridSize[0])
-		return;
-
-	unsigned int id = idx + idy*d_gridSize[0] + idz*d_gridSize[0]*d_gridSize[0];
-
-
-}
-
-__global__ void kernelPerlin(float *d_perlin_x, float *d_perlin_y, float *d_perlin_z)
-{
-	unsigned int idx = blockIdx.x*blockDim.x+threadIdx.x;
-	unsigned int idy = blockIdx.y*blockDim.y+threadIdx.y;
-	unsigned int idz = blockIdx.z*blockDim.z+threadIdx.z;
-
-	if(idx>d_gridSize[0] || idy>d_gridSize[0] || idz>d_gridSize[0])
-		return;
-
-	unsigned int id = idx + idy*d_gridSize[0] + idz*d_gridSize[0]*d_gridSize[0];
-
-
-}
-*/
-
 int CudaControler::testDevices()
 {
 	int devCount;
@@ -320,28 +275,12 @@ void CudaControler::start()
 
 	//Allocate memory for resource vector in host
 	h_resource = (float*)malloc(bytes);
-
-
-	// Size, in bytes, of each 3D perlin matrix in device
-	bytes = w_VoxelNum*w_VoxelNum*w_VoxelNum*sizeof(float);
-
-	//Allocate memory for perlin noise grids in device
-	cudaSafeCall(cudaMalloc(&d_perlin_x, bytes));
-	cudaSafeCall(cudaMalloc(&d_perlin_y, bytes));
-	cudaSafeCall(cudaMalloc(&d_perlin_z, bytes));	
-
-	//calculatePerlin();
-
 }
 
 void CudaControler::close()
 {
 		// Release host memory
 		free(h_resource);
-
-		cudaSafeCall(cudaFree(d_perlin_x));
-		cudaSafeCall(cudaFree(d_perlin_y));
-		cudaSafeCall(cudaFree(d_perlin_z));
 }
 
 void CudaControler::step(double dt)
@@ -349,11 +288,9 @@ void CudaControler::step(double dt)
 	currentTime += dt;
 	// Number of threads in each block
 	int particles_blockSize = cu_BlockSize;
-	int perlin_blockSize = cu_BlockSize;
 
 	// Number of blocks in grid
 	int particles_gridSize = (int)ceil((float)e_MaxParticles/particles_blockSize);
-	int perlin_gridSize = (int)ceil((float)(w_VoxelNum*w_VoxelNum*w_VoxelNum)/perlin_blockSize);
 
 	//Copy constant data to device
 	copyConstants();
@@ -527,25 +464,4 @@ void CudaControler::copyConstants()
 	cudaSafeCall(cudaMemcpyToSymbol(d_2lacunarity,		&(w_2lacunarity), 		sizeof(float)));
 	cudaSafeCall(cudaMemcpyToSymbol(d_1decay,			&(w_1decay), 			sizeof(float)));
 	cudaSafeCall(cudaMemcpyToSymbol(d_2decay,			&(w_2decay), 			sizeof(float)));
-
-	//cudaSafeCall(cudaMemcpyToSymbol(d_gridSize,			&(w_VoxelNum), 			sizeof(unsigned int)));
-
-}
-
-
-void CudaControler::calculatePerlin()
-{
-	int perlin_blockSize = cu_BlockSize;
-	int perlin_gridSize = (int)ceil((float)(w_VoxelNum*w_VoxelNum*w_VoxelNum)/perlin_blockSize);
-
-	curandState* devStates;
-	cudaMalloc ( &devStates, w_VoxelNum*w_VoxelNum*w_VoxelNum*sizeof( curandState ) );
-	
-	//setupRandomPerlin<<<perlin_gridSize, perlin_blockSize>>> ( devStates, rand()%10000);
-
-	//addRandomPerlin<<<perlin_gridSize, perlin_blockSize>>>(d_perlin_x, d_perlin_y, d_perlin_z, devStates);
-
-	///kernelPerlin<<<perlin_gridSize, perlin_blockSize>>>(d_perlin_x, d_perlin_y, d_perlin_z);
-	
-	cudaFree(devStates);
 }
