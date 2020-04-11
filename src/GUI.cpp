@@ -43,10 +43,23 @@ void GUIupdate()
 
 void gui_System()
 {
+    std::string but = "Pause";
+    if(paused)
+        but = "Play";
+
     ImGui::Separator();
     ImGui::BeginGroup();
     ImGui::Text("System");
-    ImGui::InputInt("Cuda Block Size", &cu_BlockSize);
+
+    if(ImGui::Button(but.c_str()))
+        paused = !paused;
+
+    ImGui::SameLine();
+    ImGui::Checkbox("Use CUDA", &GPU_Computing);
+
+    if(GPU_Computing)
+        ImGui::InputInt("Cuda Block Size", &cu_BlockSize);
+
     ImGui::EndGroup();
 
 }

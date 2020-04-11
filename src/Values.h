@@ -12,6 +12,7 @@
 extern int cu_BlockSize;
 extern int print_priority;
 extern bool GPU_Computing;
+extern bool paused;
 
 
 /*

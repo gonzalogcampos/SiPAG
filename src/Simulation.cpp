@@ -24,6 +24,7 @@
 
 bool GPU_Computing = true;
 bool CUDA = true;
+bool paused = false;
 
 
 
@@ -32,6 +33,13 @@ CPUControler *cpuControler;
 Render* render;
 OClock oclock;
 GLFWwindow* window;
+
+
+
+void framebuffer_size_callback(GLFWwindow* window, int width, int height)
+{
+    glViewport(0, 0, width, height);
+}
 
 
 int start(int argv, char **argc)
@@ -66,6 +74,7 @@ int start(int argv, char **argc)
     else title =  "SiPAG | No available CUDA devices";
     window = glfwCreateWindow(1080, 720, title.c_str(), NULL, NULL);
 	if (!window) exit(EXIT_FAILURE);
+    glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 	glfwMakeContextCurrent(window);
 	glfwSwapInterval(1);
     /*=================================================*/
@@ -102,9 +111,9 @@ void loop(void)
     while (!glfwWindowShouldClose(window)) {
         dt = oclock.step();
 
-        if(CUDA && GPU_Computing)
+        if(CUDA && GPU_Computing && !paused)
             cudaControler->step(dt);
-        else
+        else if(!paused)
             cpuControler->step(dt);
             
         render->draw(dt);
