@@ -76,7 +76,7 @@ int start(int argv, char **argc)
 	if (!window) exit(EXIT_FAILURE);
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 	glfwMakeContextCurrent(window);
-	glfwSwapInterval(1);
+	glfwSwapInterval(0);
     /*=================================================*/
     /*=================================================*/
 
