@@ -5,6 +5,7 @@
 #include <Simulation.h>
 #include <Console.h>
 #include <CudaControler.h>
+#include <CPUControler.h>
 #include <Render.h>
 #include <OClock.h>
 #include <GUI.h>
@@ -21,11 +22,13 @@
 
 
 
-bool GPU = true;
+bool GPU_Computing = true;
+bool CUDA = true;
 
 
 
 CudaControler *cudaControler;
+CPUControler *cpuControler;
 Render* render;
 OClock oclock;
 GLFWwindow* window;
@@ -38,26 +41,40 @@ int start(int argv, char **argc)
 
 
     cudaControler   = CudaControler::getInstance();
+    cpuControler    = CPUControler::getInstance();
     render          = Render::getInstance();
 
-    if(cudaControler->testDevices()!=0)
-        return 1;
 
+    /*=================================================*/
+    /*==================  CUDA INIT ===================*/
+    /*=================================================*/
+    if(cudaControler->testDevices()!=0)
+        CUDA = false;
+    /*=================================================*/
+    /*=================================================*/
+
+
+
+    /*=================================================*/
+    /*==================  GLFW INIT ===================*/
+    /*=================================================*/
     if (!glfwInit())
         return 1;
-
-    std::string title = "SiPAG | " + cudaControler->getDevice();
-    GLFWwindow* window = glfwCreateWindow(1080, 720, title.c_str(), NULL, NULL);
+    
+    std::string title;
+    if(CUDA)title = "SiPAG | " + cudaControler->getDevice();
+    else title =  "SiPAG | No available CUDA devices";
+    window = glfwCreateWindow(1080, 720, title.c_str(), NULL, NULL);
 	if (!window) exit(EXIT_FAILURE);
-
 	glfwMakeContextCurrent(window);
 	glfwSwapInterval(1);
+    /*=================================================*/
+    /*=================================================*/
 
 
     /*=================================================*/
-    /*===============  IMGUI OPTIONS ==================*/
+    /*=================  IMGUI INIT ===================*/
     /*=================================================*/
-
     // Setup Dear ImGui context
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
@@ -67,35 +84,39 @@ int start(int argv, char **argc)
     // Setup Platform/Renderer bindings
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL3_Init("#version 450");
-
     /*=================================================*/
     /*=================================================*/
   
+    //Start objects
     cudaControler->start();
+    cpuControler->start();
     oclock.start();
     render->start();
-
-    while (!glfwWindowShouldClose(window)) {
-        
-        step();
-        glfwPollEvents();        
-	    glfwSwapBuffers(window);
-	}
-
 
     return 0;
 }
 
-void step(void)
+void loop(void)
 {
-    double dt = oclock.step();
-    cudaControler->step(dt);
-    render->draw(dt);
-	GUIupdate();
+    double dt;
+    while (!glfwWindowShouldClose(window)) {
+        dt = oclock.step();
+
+        if(CUDA && GPU_Computing)
+            cudaControler->step(dt);
+        else
+            cpuControler->step(dt);
+            
+        render->draw(dt);
+	    GUIupdate();
+        glfwPollEvents();        
+	    glfwSwapBuffers(window);
+	}
 }
 
 void close(void)
 {
     cudaControler->close();
+    cpuControler->close();
     render->close();
 }

@@ -9,7 +9,9 @@ int main(int argv, char **argc)
 
     if(start(argv, argc)!=0)
         return 1;
-        
+    
+    loop();
+    
     close();
 
     return 0;

@@ -17,7 +17,7 @@
                 "-Isrc/.",
                 "src/CudaControler.cu",
                 "-x", "cu",
-                "src/SIPAG.cpp", "src/Console.cpp", "src/Render.cpp", "src/GUI.cpp", "src/Simulation.cpp", "src/OClock.cpp",
+                "src/SIPAG.cpp", "src/Console.cpp", "src/Render.cpp", "src/GUI.cpp", "src/Simulation.cpp", "src/OClock.cpp", "src/CPUControler.cpp",
                 "include/imGUI/imgui.cpp", "include/imGUI/imgui_widgets.cpp", "include/imGUI/imgui_draw.cpp", "include/imGUI/imgui_impl_glfw.cpp", "include/imGUI/imgui_impl_opengl3.cpp",
                 "-Iinclude/",
                 "-Isrc/shaders/.",
