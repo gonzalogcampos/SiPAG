@@ -11,12 +11,14 @@ class CPUControler
             return &onlyInstance;
         }
 
-        void importBuffers();
-        void exportBuffers();
+        float *x, *y, *z, *lt, *lr, *vx, *vy, *vz;
+
+        void expData();
+        void impData();
         void resize();
         void step(double dt);
         void start();
         void close();
 
-        float *x, *y, *z, *lt, *lr, *vx, *vy, *vz;
+
 };

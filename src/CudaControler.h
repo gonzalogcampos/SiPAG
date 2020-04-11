@@ -21,6 +21,9 @@ class CudaControler
         void close();
         void resize();
         int testDevices();
+        void setImportData(bool i){importData = i;}
+        void expData(float* x, float*  y, float* z, float* vx, float* vy, float* vz, float* lt, float* lr);
+        void impData(float* x, float*  y, float* z, float* vx, float* vy, float* vz, float* lt, float* lr);
         std::string getDevice();
         void conectBuffers(unsigned int bufferX,unsigned int bufferY, unsigned int bufferZ, 
                             unsigned int bufferVX, unsigned int bufferVY, unsigned int bufferVZ, 
@@ -37,30 +40,18 @@ class CudaControler
         void copyConstants();
         
 		float *h_resource;    //host resource for  copy buffers
+        bool importData = false;
 
-        //If simple precision values we will use theese
-        float *d_x_s;	    //position x
-	    float *d_y_s;	    //position y
-	    float *d_z_s;     //position z
+        float *d_x;	    //position x
+	    float *d_y;	    //position y
+	    float *d_z;     //position z
 
-	    float *d_vx_s;	//velocity x
-	    float *d_vy_s;	//velocity y
-	    float *d_vz_s;	//velocity x
+	    float *d_vx;	//velocity x
+	    float *d_vy;	//velocity y
+	    float *d_vz;	//velocity x
 
-	    float *d_lt_s;	//life time
-	    float *d_lr_s;	//life remaining
-
-        //If double precision values then
-        float *d_x_d;	    //position x
-	    float *d_y_d;	    //position y
-	    float *d_z_d;     //position z
-
-	    float *d_vx_d;	//velocity x
-	    float *d_vy_d;	//velocity y
-	    float *d_vz_d;	//velocity x
-
-	    float *d_lt_d;	//life time
-	    float *d_lr_d;	//life remaining
+	    float *d_lt;	//life time
+	    float *d_lr;	//life remaining
 
         cudaGraphicsResource_t resource_x = 0;
         cudaGraphicsResource_t resource_y = 0;

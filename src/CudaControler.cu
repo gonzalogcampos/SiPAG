@@ -304,14 +304,14 @@ void CudaControler::step(double dt)
 	cudaSafeCall( cudaGraphicsMapResources(1, &resource_vz) );
 	cudaSafeCall( cudaGraphicsMapResources(1, &resource_lt) );
 	cudaSafeCall( cudaGraphicsMapResources(1, &resource_lr) );
-	cudaSafeCall( cudaGraphicsResourceGetMappedPointer((void **)&d_x_s, &bytes, resource_x) );
-	cudaSafeCall( cudaGraphicsResourceGetMappedPointer((void **)&d_y_s, &bytes, resource_y) );
-	cudaSafeCall( cudaGraphicsResourceGetMappedPointer((void **)&d_z_s, &bytes, resource_z) );	
-	cudaSafeCall( cudaGraphicsResourceGetMappedPointer((void **)&d_vx_s, &bytes, resource_vx) );
-	cudaSafeCall( cudaGraphicsResourceGetMappedPointer((void **)&d_vy_s, &bytes, resource_vy) );
-	cudaSafeCall( cudaGraphicsResourceGetMappedPointer((void **)&d_vz_s, &bytes, resource_vz) );
-	cudaSafeCall( cudaGraphicsResourceGetMappedPointer((void **)&d_lt_s, &bytes, resource_lt) );
-	cudaSafeCall( cudaGraphicsResourceGetMappedPointer((void **)&d_lr_s, &bytes, resource_lr) );
+	cudaSafeCall( cudaGraphicsResourceGetMappedPointer((void **)&d_x, &bytes, resource_x) );
+	cudaSafeCall( cudaGraphicsResourceGetMappedPointer((void **)&d_y, &bytes, resource_y) );
+	cudaSafeCall( cudaGraphicsResourceGetMappedPointer((void **)&d_z, &bytes, resource_z) );	
+	cudaSafeCall( cudaGraphicsResourceGetMappedPointer((void **)&d_vx, &bytes, resource_vx) );
+	cudaSafeCall( cudaGraphicsResourceGetMappedPointer((void **)&d_vy, &bytes, resource_vy) );
+	cudaSafeCall( cudaGraphicsResourceGetMappedPointer((void **)&d_vz, &bytes, resource_vz) );
+	cudaSafeCall( cudaGraphicsResourceGetMappedPointer((void **)&d_lt, &bytes, resource_lt) );
+	cudaSafeCall( cudaGraphicsResourceGetMappedPointer((void **)&d_lr, &bytes, resource_lr) );
 
 	//Execute Kernel
 	//Random device States
@@ -320,7 +320,7 @@ void CudaControler::step(double dt)
 	
 	setupRandomParticle<<<particles_gridSize, particles_blockSize>>> ( devStates, rand()%10000);
 
-	kernelParticle<<<particles_gridSize, particles_blockSize>>>(d_x_s, d_y_s, d_z_s, d_vx_s, d_vy_s, d_vz_s, d_lt_s, d_lr_s, devStates, dt);
+	kernelParticle<<<particles_gridSize, particles_blockSize>>>(d_x, d_y, d_z, d_vx, d_vy, d_vz, d_lt, d_lr, devStates, dt);
 	
 	cudaFree(devStates);
 
@@ -389,39 +389,39 @@ void CudaControler::printData(Data d)
 	{
 		case PARTICLE_X:
 			cPrint("X:   ", 2);
-			cudaMemcpy( h_resource, d_x_s, bytes, cudaMemcpyDeviceToHost );
+			cudaMemcpy( h_resource, d_x, bytes, cudaMemcpyDeviceToHost );
 		break;		
 		case PARTICLE_Y:
 			cPrint("Y:   ", 2);
-			cudaMemcpy( h_resource, d_y_s, bytes, cudaMemcpyDeviceToHost );
+			cudaMemcpy( h_resource, d_y, bytes, cudaMemcpyDeviceToHost );
 		break;
 		case PARTICLE_Z:
 			cPrint("Z:   ", 2);
-			cudaMemcpy( h_resource, d_z_s, bytes, cudaMemcpyDeviceToHost );
+			cudaMemcpy( h_resource, d_z, bytes, cudaMemcpyDeviceToHost );
 		break;
 		case PARTICLE_VX:
 			cPrint("VX:   ", 2);
-			cudaMemcpy( h_resource, d_vx_s, bytes, cudaMemcpyDeviceToHost );
+			cudaMemcpy( h_resource, d_vx, bytes, cudaMemcpyDeviceToHost );
 		break;
 		case PARTICLE_VY:
 			cPrint("VY:   ", 2);
-			cudaMemcpy( h_resource, d_vy_s, bytes, cudaMemcpyDeviceToHost );
+			cudaMemcpy( h_resource, d_vy, bytes, cudaMemcpyDeviceToHost );
 		break;
 		case PARTICLE_VZ:
 			cPrint("VZ:   ", 2);
-			cudaMemcpy( h_resource, d_vz_s, bytes, cudaMemcpyDeviceToHost );
+			cudaMemcpy( h_resource, d_vz, bytes, cudaMemcpyDeviceToHost );
 		break;
 		case PARTICLE_LT:
 			cPrint("LT:   ", 2);
-			cudaMemcpy( h_resource, d_lt_s, bytes, cudaMemcpyDeviceToHost );
+			cudaMemcpy( h_resource, d_lt, bytes, cudaMemcpyDeviceToHost );
 		break;
 		case PARTICLE_LR:
 			cPrint("LR:   ", 2);
-			cudaMemcpy( h_resource, d_lr_s, bytes, cudaMemcpyDeviceToHost );
+			cudaMemcpy( h_resource, d_lr, bytes, cudaMemcpyDeviceToHost );
 		break;
 		default:
 			cPrint("X:   ", 2);
-			cudaMemcpy( h_resource, d_x_s, bytes, cudaMemcpyDeviceToHost );
+			cudaMemcpy( h_resource, d_x, bytes, cudaMemcpyDeviceToHost );
 		break;
 	}
 
@@ -430,6 +430,36 @@ void CudaControler::printData(Data d)
 		cPrint(cString(h_resource[i]) + " ", 2);
 	}
 	cPrint("\n", 1);
+}
+
+void CudaControler::expData(float* x, float*  y, float* z, float* vx, float* vy, float* vz, float* lt, float* lr)
+{
+	size_t bytes = e_MaxParticles*sizeof(float);
+
+	cudaSafeCall(cudaMemcpy( x, d_x, bytes, cudaMemcpyDeviceToHost));
+	cudaSafeCall(cudaMemcpy( y, d_y, bytes, cudaMemcpyDeviceToHost));
+	cudaSafeCall(cudaMemcpy( z, d_z, bytes, cudaMemcpyDeviceToHost));
+	cudaSafeCall(cudaMemcpy( vx, d_vx, bytes, cudaMemcpyDeviceToHost));
+	cudaSafeCall(cudaMemcpy( vy, d_vy, bytes, cudaMemcpyDeviceToHost));
+	cudaSafeCall(cudaMemcpy( vz, d_vz, bytes, cudaMemcpyDeviceToHost));
+	cudaSafeCall(cudaMemcpy( lt, d_lt, bytes, cudaMemcpyDeviceToHost));
+	cudaSafeCall(cudaMemcpy( lr, d_lr, bytes, cudaMemcpyDeviceToHost));
+
+
+}
+
+void CudaControler::impData(float* x, float*  y, float* z, float* vx, float* vy, float* vz, float* lt, float* lr)
+{
+	size_t bytes = e_MaxParticles*sizeof(float);
+
+	cudaSafeCall(cudaMemcpy( d_x, x, bytes, cudaMemcpyHostToDevice));
+	cudaSafeCall(cudaMemcpy( d_y, y, bytes, cudaMemcpyHostToDevice));
+	cudaSafeCall(cudaMemcpy( d_z, z, bytes, cudaMemcpyHostToDevice));
+	cudaSafeCall(cudaMemcpy( d_vx, vx, bytes, cudaMemcpyHostToDevice));
+	cudaSafeCall(cudaMemcpy( d_vy, vy, bytes, cudaMemcpyHostToDevice));
+	cudaSafeCall(cudaMemcpy( d_vz, vz, bytes, cudaMemcpyHostToDevice));
+	cudaSafeCall(cudaMemcpy( d_lt, lt, bytes, cudaMemcpyHostToDevice));
+	cudaSafeCall(cudaMemcpy( d_lr, lr, bytes, cudaMemcpyHostToDevice));
 }
 
 
