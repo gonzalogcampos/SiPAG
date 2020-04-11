@@ -28,6 +28,7 @@ void GUIupdate()
     ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
     ImGui::SetWindowPos(ImVec2(20,20));
     ImGui::SetWindowSize(ImVec2(520, 680));
+
     gui_System();
     gui_Emitter();
     gui_Render();
@@ -116,7 +117,12 @@ void gui_Render()
 {
     ImGui::Separator();
     ImGui::Text("Render");
-    ImGui::SliderFloat("Camera Rotation",       &c_Rotation,            -6.3f,   6.3f);            // Edit 1 float using a slider from 0.0f to 1.0f
+    ImGui::Checkbox("Auto Rotation", &c_autoRotation);
+    if(c_autoRotation)
+        ImGui::SliderFloat("Camera Rotation Velocity", &c_autoRotationV, 0.f, 5.f);
+    else  
+        ImGui::SliderFloat("Camera Rotation",       &c_Rotation,            -6.3f,   6.3f);            // Edit 1 float using a slider from 0.0f to 1.0f
+    
     ImGui::SliderFloat("Camera Distance",       &c_Distance,            0.0f,   100.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
     ImGui::SliderFloat("Camera Height",         &c_Height,              -20.0f, 20.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
     ImGui::SameLine();

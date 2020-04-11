@@ -23,6 +23,8 @@
 /*======================    VALUES    ===========================*/
 /*===============================================================*/
 //Camera
+bool c_autoRotation = false;
+float c_autoRotationV = 1.f;
 float c_Rotation = 0.f;
 float c_Distance = 35.f;
 float c_Height = 10.f;
@@ -89,6 +91,9 @@ void Render::draw(float dt)
 {
     time += dt;
     this->dt = dt;
+
+    if(c_autoRotation)
+        c_Rotation -= c_autoRotationV*dt;
 
 	// Clear the screen
     glClearBufferfv(GL_COLOR, 0, r_BackgroundColor);

@@ -20,6 +20,8 @@ extern bool paused;
 * -------- RENDER --------
 * 
 */
+extern bool c_autoRotation;
+extern float c_autoRotationV;
 extern float c_Rotation;
 extern float c_Distance;
 extern float c_Height;
