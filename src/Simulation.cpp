@@ -10,7 +10,7 @@
 #include <OClock.h>
 #include <GUI.h>
 #include <Values.h>
-
+#include <SOIL.h>
 #include <imGUI/imgui.h>
 #include <imGUI/imgui_impl_glfw.h>
 #include <imGUI/imgui_impl_opengl3.h>
@@ -73,6 +73,9 @@ int start(int argv, char **argc)
     if(CUDA)title = "SiPAG | " + cudaControler->getDevice();
     else title =  "SiPAG | No available CUDA devices";
     window = glfwCreateWindow(1080, 720, title.c_str(), NULL, NULL);
+    GLFWimage icons[1];
+    icons[0].pixels = SOIL_load_image("res/icon.png", &icons[0].width, &icons[0].height, 0, SOIL_LOAD_RGBA);
+    glfwSetWindowIcon(window, 1, icons);
 	if (!window) exit(EXIT_FAILURE);
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 	glfwMakeContextCurrent(window);
