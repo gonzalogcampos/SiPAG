@@ -19,6 +19,8 @@ class Render
         void draw(float dt);
         void close();
         void resize();
+        void pasateBuffers(float* x, float*  y, float* z, float* vx, float* vy, float* vz, float* lt, float* lr);
+
 
     private:
         Render(){}

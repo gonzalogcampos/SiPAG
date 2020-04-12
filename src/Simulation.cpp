@@ -108,13 +108,35 @@ int start(int argv, char **argc)
 void loop(void)
 {
     double dt;
+    bool cpuWasPlaying;
+
+    if(CUDA && GPU_Computing)
+        cpuWasPlaying = false;
+    else
+        cpuWasPlaying = true;
+    
     while (!glfwWindowShouldClose(window)) {
         dt = oclock.step();
 
         if(CUDA && GPU_Computing && !paused)
+        {
+            if(cpuWasPlaying)
+            {
+                cpuControler->expData();
+                cpuWasPlaying = false;
+            }
+
             cudaControler->step(dt);
-        else if(!paused)
+        }else if(!paused)
+        {
+            if(!cpuWasPlaying)
+            {
+                cpuControler->impData();
+                cpuWasPlaying = true;
+            }
+
             cpuControler->step(dt);
+        }
             
         render->draw(dt);
 	    GUIupdate();

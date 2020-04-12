@@ -179,6 +179,27 @@ void Render::deleteBuffers()
     glDeleteBuffers(1, &bufferLR);
 }
 
+void Render::pasateBuffers(float* x, float*  y, float* z, float* vx, float* vy, float* vz, float* lt, float* lr)
+{
+    int bytes = e_MaxParticles*(sizeof(float));
+    glBindBuffer(GL_ARRAY_BUFFER, bufferX);
+    glBufferData (GL_ARRAY_BUFFER , bytes, x, GL_DYNAMIC_DRAW);
+    glBindBuffer(GL_ARRAY_BUFFER, bufferY);
+    glBufferData (GL_ARRAY_BUFFER , bytes, y, GL_DYNAMIC_DRAW);
+    glBindBuffer(GL_ARRAY_BUFFER, bufferZ);
+    glBufferData (GL_ARRAY_BUFFER , bytes, z, GL_DYNAMIC_DRAW);
+    glBindBuffer(GL_ARRAY_BUFFER, bufferVX);
+    glBufferData (GL_ARRAY_BUFFER , bytes, vx, GL_DYNAMIC_DRAW);
+    glBindBuffer(GL_ARRAY_BUFFER, bufferVY);
+    glBufferData (GL_ARRAY_BUFFER , bytes, vy, GL_DYNAMIC_DRAW);
+    glBindBuffer(GL_ARRAY_BUFFER, bufferVZ);
+    glBufferData (GL_ARRAY_BUFFER , bytes, vz, GL_DYNAMIC_DRAW);
+    glBindBuffer(GL_ARRAY_BUFFER, bufferLT);
+    glBufferData (GL_ARRAY_BUFFER , bytes, lt, GL_DYNAMIC_DRAW);
+    glBindBuffer(GL_ARRAY_BUFFER, bufferLR);
+    glBufferData (GL_ARRAY_BUFFER , bytes, lr, GL_DYNAMIC_DRAW);
+}
+
 
 void Render::compileShaders()
 {
