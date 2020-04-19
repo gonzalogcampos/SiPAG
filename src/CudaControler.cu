@@ -24,43 +24,43 @@
 /*===============================================================*/
 /*======================    VALUES    ===========================*/
 /*===============================================================*/
+
 //SYSTEM
-int 	cu_BlockSize = 1024;
-bool	cu_CopyConstants = true;
-bool	cu_UpdateRandomKernel = true;
+int 	cu_BlockSize 			= 1024;
+bool	cu_CopyConstants 		= true;
+bool	cu_UpdateRandomKernel 	= true;
+
 //EMITTER
-float 	e_Length = .8f;                        	//Emitter radious
-int 	e_Type = 0;                        			//Emitter Type
-int 	e_EmissionFrec = 100;            			//In 1/1000
-int 	e_MaxParticles = 30000;           	//Max Particles
+float 	e_Length 				= .8f;                  //Emitter radious
+int 	e_Type 					= 0;                    //Emitter Type
+int 	e_EmissionFrec 			= 100;            		//In 1/1000
+int 	e_MaxParticles 			= 30000;           		//Max Particles
+
 //PARTICLES
-float 	p_LifeTime = 3.f;                       	//Life of the particle in seconds
-float 	p_RLifeTime = 0.5f;                     	//% of random in life
+float 	p_LifeTime 				= 3.f;                  //Life of the particle in seconds
+float 	p_RLifeTime 			= 0.5f;                 //% of random in life
+float 	p_InitVelocity[3]		= {0.0f, 1.0f, 0.0f};	//Z init velocity
+float 	p_RInitVelocity[3] 		= {0.5f, 0.5f, 0.5f}; 	//Z init velocity
+float 	p_VelocityDecay 		= 1.0f;                 //% per second velocity decays
 
-float 	p_InitVelocity[3] = {0.0f, 1.0f, 0.0f}; 	//Z init velocity
-float 	p_RInitVelocity[3] = {0.5f, 0.5f, 0.5f}; 	//Z init velocity
-
-float 	p_VelocityDecay = 1.0f;                  	//% per second velocity decays
 //WIND
+float 	currentTime 			= 0.f;
+float 	timeEv 					= 1.f;
+float 	w_Constant[3] 			= {0.2f, 0.2f, 0.f};
 
-float 	currentTime = 0.f;
-float 	timeEv = 1.f;
+bool	w_1 					= true;
+int 	w_1n 					= 4;
+float 	w_1Amp[3] 				= {1.f, 1.f, 1.f};
+float 	w_1Size 				= .2f;
+float 	w_1lacunarity 			= .25f;
+float 	w_1decay 				= 0.2f;
 
-float 	w_Constant[3] = {0.2f, 0.2f, 0.f};
-
-bool	w_1 = true;
-int 	w_1n = 4;
-float 	w_1Amp[3] = {1.f, 1.f, 1.f};
-float 	w_1Size = .2f;
-float 	w_1lacunarity = .25f;
-float 	w_1decay = 0.2f;
-
-bool	w_2 = true;
-int 	w_2n = 3;
-float 	w_2Amp[3] = {.4f, .4f, .4f};
-float 	w_2Size = 1.f;
-float 	w_2lacunarity = 1.f;
-float 	w_2decay = 1.f;
+bool	w_2 					= true;
+int 	w_2n 					= 3;
+float 	w_2Amp[3] 				= {.4f, .4f, .4f};
+float 	w_2Size 				= 1.f;
+float 	w_2lacunarity 			= 1.f;
+float 	w_2decay 				= 1.f;
 /*===============================================================*/
 /*===============================================================*/
 
@@ -276,7 +276,9 @@ void CudaControler::start()
 	h_resource = (float*)malloc(bytes);
 
 	cudaMalloc ( &devStates, e_MaxParticles*sizeof( curandState ) );
-
+	int particles_blockSize = cu_BlockSize;
+	int particles_gridSize = (int)ceil((float)e_MaxParticles/particles_blockSize);
+	setupRandomParticle<<<particles_gridSize, particles_blockSize>>> ( (curandState*)devStates, rand()%10000);
 }
 
 void CudaControler::close()
@@ -345,16 +347,8 @@ void CudaControler::step(double dt)
 
 void CudaControler::resize()
 {
-	free(h_resource);
-	cudaFree(devStates);
-
-	// Size, in bytes, of Particles vector host
-	size_t bytes = e_MaxParticles*sizeof(float);
-
-	//Allocate memory for resource vector in host
-	h_resource = (float*)malloc(bytes);
-
-	cudaMalloc ( &devStates, e_MaxParticles*sizeof( curandState ) );
+	close();
+	start();
 }
 
 void CudaControler::conectBuffers(unsigned int bufferX,unsigned int bufferY, unsigned int bufferZ,

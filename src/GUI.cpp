@@ -17,7 +17,8 @@ static bool espiral = false;
 static bool defShader = true;
 
 
-
+static int frames_count = 0;
+static float FPS_sum = 0.f;
 void GUIupdate()
 {
     ImGui_ImplOpenGL3_NewFrame();
@@ -26,7 +27,18 @@ void GUIupdate()
     ImGui::NewFrame();
 
     ImGui::Begin("Control Panel");
-    ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+    float fps = ImGui::GetIO().Framerate;
+    frames_count++;
+    FPS_sum += fps;
+    float FPS_average = FPS_sum/(frames_count*1.f);
+    ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / fps, fps);
+    ImGui::Text("Average: %.1f FPS", FPS_average);
+    ImGui::SameLine();
+    if(ImGui::Button("Restart"))
+    {
+        FPS_sum = 0.f;
+        frames_count = 0;
+    }
     ImGui::SetWindowPos(ImVec2(20,20));
     ImGui::SetWindowSize(ImVec2(520, 680));
 
