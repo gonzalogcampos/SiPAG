@@ -16,7 +16,6 @@
 
 #include <CudaNoiseFunc.cuh>
 
-
 #include <CudaControler.h>
 #include <Values.h>
 #include <Console.h>
