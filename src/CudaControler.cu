@@ -27,6 +27,7 @@
 /*===============================================================*/
 //SYSTEM
 int 	cu_BlockSize = 1024;
+bool	cu_CopyConstants = true;
 //EMITTER
 float 	e_Length = .8f;                        	//Emitter radious
 int 	e_Type = 0;                        			//Emitter Type
@@ -273,88 +274,88 @@ void CudaControler::start()
 
 	//Allocate memory for resource vector in host
 	h_resource = (float*)malloc(bytes);
+
+	cudaMalloc ( &devStates, e_MaxParticles*sizeof( curandState ) );
+
 }
 
 void CudaControler::close()
 {
-		// Release host memory
-		free(h_resource);
+	// Release host memory
+	free(h_resource);
+	cudaFree(devStates);
 }
 
 void CudaControler::step(double dt)
 {
 	currentTime += dt;
+
+	//Copy constant data to device
+	if(cu_CopyConstants)
+		copyConstants();
+
+	//Maping the OpenGL buffers for CUDA
+	if(r_enable)
+	{
+		size_t bytes = e_MaxParticles*sizeof(float);
+		cudaSafeCall( cudaGraphicsMapResources(1, &resource_x) );
+		cudaSafeCall( cudaGraphicsMapResources(1, &resource_y) );
+		cudaSafeCall( cudaGraphicsMapResources(1, &resource_z) );	
+		cudaSafeCall( cudaGraphicsMapResources(1, &resource_vx) );
+		cudaSafeCall( cudaGraphicsMapResources(1, &resource_vy) );
+		cudaSafeCall( cudaGraphicsMapResources(1, &resource_vz) );
+		cudaSafeCall( cudaGraphicsMapResources(1, &resource_lt) );
+		cudaSafeCall( cudaGraphicsMapResources(1, &resource_lr) );
+		cudaSafeCall( cudaGraphicsResourceGetMappedPointer((void **)&d_x, &bytes, resource_x) );
+		cudaSafeCall( cudaGraphicsResourceGetMappedPointer((void **)&d_y, &bytes, resource_y) );
+		cudaSafeCall( cudaGraphicsResourceGetMappedPointer((void **)&d_z, &bytes, resource_z) );	
+		cudaSafeCall( cudaGraphicsResourceGetMappedPointer((void **)&d_vx, &bytes, resource_vx) );
+		cudaSafeCall( cudaGraphicsResourceGetMappedPointer((void **)&d_vy, &bytes, resource_vy) );
+		cudaSafeCall( cudaGraphicsResourceGetMappedPointer((void **)&d_vz, &bytes, resource_vz) );
+		cudaSafeCall( cudaGraphicsResourceGetMappedPointer((void **)&d_lt, &bytes, resource_lt) );
+		cudaSafeCall( cudaGraphicsResourceGetMappedPointer((void **)&d_lr, &bytes, resource_lr) );
+	}
+
+	//Execute Kernel
 	// Number of threads in each block
 	int particles_blockSize = cu_BlockSize;
-
 	// Number of blocks in grid
 	int particles_gridSize = (int)ceil((float)e_MaxParticles/particles_blockSize);
 
-	//Copy constant data to device
-	copyConstants();
-
-	//Maping the OpenGL buffers for CUDA
-	size_t bytes = e_MaxParticles*sizeof(float);
-
-	cudaSafeCall( cudaGraphicsMapResources(1, &resource_x) );
-	cudaSafeCall( cudaGraphicsMapResources(1, &resource_y) );
-	cudaSafeCall( cudaGraphicsMapResources(1, &resource_z) );	
-	cudaSafeCall( cudaGraphicsMapResources(1, &resource_vx) );
-	cudaSafeCall( cudaGraphicsMapResources(1, &resource_vy) );
-	cudaSafeCall( cudaGraphicsMapResources(1, &resource_vz) );
-	cudaSafeCall( cudaGraphicsMapResources(1, &resource_lt) );
-	cudaSafeCall( cudaGraphicsMapResources(1, &resource_lr) );
-	cudaSafeCall( cudaGraphicsResourceGetMappedPointer((void **)&d_x, &bytes, resource_x) );
-	cudaSafeCall( cudaGraphicsResourceGetMappedPointer((void **)&d_y, &bytes, resource_y) );
-	cudaSafeCall( cudaGraphicsResourceGetMappedPointer((void **)&d_z, &bytes, resource_z) );	
-	cudaSafeCall( cudaGraphicsResourceGetMappedPointer((void **)&d_vx, &bytes, resource_vx) );
-	cudaSafeCall( cudaGraphicsResourceGetMappedPointer((void **)&d_vy, &bytes, resource_vy) );
-	cudaSafeCall( cudaGraphicsResourceGetMappedPointer((void **)&d_vz, &bytes, resource_vz) );
-	cudaSafeCall( cudaGraphicsResourceGetMappedPointer((void **)&d_lt, &bytes, resource_lt) );
-	cudaSafeCall( cudaGraphicsResourceGetMappedPointer((void **)&d_lr, &bytes, resource_lr) );
-
-	//Execute Kernel
 	//Random device States
-	curandState* devStates;
-	cudaMalloc ( &devStates, e_MaxParticles*sizeof( curandState ) );
+	setupRandomParticle<<<particles_gridSize, particles_blockSize>>> ( (curandState*)devStates, rand()%10000);
+
+	//Kernel particle
+	kernelParticle<<<particles_gridSize, particles_blockSize>>>(d_x, d_y, d_z, d_vx, d_vy, d_vz, d_lt, d_lr, (curandState*)devStates, dt);
 	
-	setupRandomParticle<<<particles_gridSize, particles_blockSize>>> ( devStates, rand()%10000);
-
-	kernelParticle<<<particles_gridSize, particles_blockSize>>>(d_x, d_y, d_z, d_vx, d_vy, d_vz, d_lt, d_lr, devStates, dt);
-	
-	cudaFree(devStates);
-
-	//printData(PARTICLE_X);
-	//printData(PARTICLE_VX);
-	//printData(PARTICLE_Y);
-	//printData(PARTICLE_VY);
-	//printData(PARTICLE_Z);
-	//printData(PARTICLE_VZ);
-	//printData(PARTICLE_LT);
-	//printData(PARTICLE_LR);
-
-
 	//Reset the buffers
-	cudaGraphicsUnmapResources(1, &resource_x);
-	cudaGraphicsUnmapResources(1, &resource_y);
-	cudaGraphicsUnmapResources(1, &resource_z);
-	cudaGraphicsUnmapResources(1, &resource_vx);
-	cudaGraphicsUnmapResources(1, &resource_vy);
-	cudaGraphicsUnmapResources(1, &resource_vz);
-	cudaGraphicsUnmapResources(1, &resource_lt);
-	cudaGraphicsUnmapResources(1, &resource_lr);
+	if(r_enable)
+	{
+		cudaGraphicsUnmapResources(1, &resource_x);
+		cudaGraphicsUnmapResources(1, &resource_y);
+		cudaGraphicsUnmapResources(1, &resource_z);
+		cudaGraphicsUnmapResources(1, &resource_vx);
+		cudaGraphicsUnmapResources(1, &resource_vy);
+		cudaGraphicsUnmapResources(1, &resource_vz);
+		cudaGraphicsUnmapResources(1, &resource_lt);
+		cudaGraphicsUnmapResources(1, &resource_lr);
+	}
 }
 
 void CudaControler::resize()
 {
 	free(h_resource);
-	
+	cudaFree(devStates);
+
 	// Size, in bytes, of Particles vector host
 	size_t bytes = e_MaxParticles*sizeof(float);
 
 	//Allocate memory for resource vector in host
 	h_resource = (float*)malloc(bytes);
+
+	cudaMalloc ( &devStates, e_MaxParticles*sizeof( curandState ) );
 }
+
 void CudaControler::conectBuffers(unsigned int bufferX,unsigned int bufferY, unsigned int bufferZ,
 									unsigned int bufferVX,unsigned int bufferVY, unsigned int bufferVZ, 
 									unsigned int bufferLT, unsigned int bufferLR)
@@ -369,11 +370,12 @@ void CudaControler::conectBuffers(unsigned int bufferX,unsigned int bufferY, uns
 	cudaSafeCall( cudaGraphicsGLRegisterBuffer(&resource_lr, (GLuint)bufferLR, cudaGraphicsRegisterFlagsNone) );
 }
 
-
-void CudaControler::cudaSafeCall(cudaError err){
-  if(cudaSuccess != err) {
-	  std::string m = cudaGetErrorString(err);
-	  cPrint("Error in CUDA: " + m + "\n", 1);
+void CudaControler::cudaSafeCall(cudaError err)
+{
+  if(cudaSuccess != err)
+  {
+	std::string m = cudaGetErrorString(err);
+	cPrint("Error in CUDA: " + m + "\n", 1);
   }
 }
 

@@ -60,7 +60,10 @@ void gui_System()
     ImGui::Checkbox("Use CUDA", &GPU_Computing);
 
     if(GPU_Computing)
+    {
         ImGui::InputInt("Cuda Block Size", &cu_BlockSize);
+        ImGui::Checkbox("Pasate Constants", &cu_CopyConstants);
+    }
 
     ImGui::EndGroup();
 
@@ -118,37 +121,41 @@ void gui_Render()
 {
     ImGui::Separator();
     ImGui::Text("Render");
-    ImGui::Checkbox("Auto Rotation", &c_autoRotation);
-    if(c_autoRotation)
-        ImGui::SliderFloat("Camera Rotation Velocity", &c_autoRotationV, 0.f, 5.f);
-    else  
-        ImGui::SliderFloat("Camera Rotation",       &c_Rotation,            -6.3f,   6.3f);            // Edit 1 float using a slider from 0.0f to 1.0f
-    
-    ImGui::SliderFloat("Camera Distance",       &c_Distance,            0.0f,   100.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
-    ImGui::SliderFloat("Camera Height",         &c_Height,              -20.0f, 20.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
-    ImGui::SameLine();
-    if(ImGui::Button("Set 0"))
-        c_Height =  0.f;
-    
-    ImGui::ColorEdit3("Background Color",       r_BackgroundColor);
-
-    if(ImGui::Button("Change Shader"))
-    {   
-        defShader = !defShader;
-        Render::getInstance()->changeShader();
-    }
-    if(defShader)
+    ImGui::Checkbox("Enable Render", &r_enable);
+    ImGui::ColorEdit3("Background Color", r_BackgroundColor);
+    if(r_enable)
     {
-        ImGui::Checkbox("Use R channel as alpha", &r_RasAlpha);
-        if(r_RasAlpha)
-            ImGui::ColorEdit3("Particle Color", r_DefaultColor);
-        ImGui::SliderFloat("Size min",              &p_minSize,             .01f,   5.f);
-        ImGui::SliderFloat("Size inc",              &p_incSize,             0.f,    5.f);   //%per second size improves
-        ImGui::SliderFloat("Opacity", &r_MaxOpacity, 0.f, 1.f);
-        ImGui::SliderFloat("T Opacity growing", &r_TimeOpacityGrowing, 0.f, 1.f);
-        ImGui::SliderFloat("T Opacity decreasing", &r_TimeOpacityDecreasing, 0.f, 1.f);
-    }else{   
-        ImGui::ColorEdit4("Dots Color", r_DotsColor);
+        ImGui::Checkbox("Auto Rotation", &c_autoRotation);
+        if(c_autoRotation)
+            ImGui::SliderFloat("Camera Rotation Velocity", &c_autoRotationV, 0.f, 5.f);
+        else  
+            ImGui::SliderFloat("Camera Rotation", &c_Rotation, -6.3f, 6.3f);            // Edit 1 float using a slider from 0.0f to 1.0f
+        
+        ImGui::SliderFloat("Camera Distance",       &c_Distance, 0.0f, 100.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
+        ImGui::SliderFloat("Camera Height",         &c_Height, -20.0f, 20.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
+        ImGui::SameLine();
+        if(ImGui::Button("Set 0"))
+            c_Height =  0.f;
+        
+
+        if(ImGui::Button("Change Shader"))
+        {   
+            defShader = !defShader;
+            Render::getInstance()->changeShader();
+        }
+        if(defShader)
+        {
+            ImGui::Checkbox("Use R channel as alpha", &r_RasAlpha);
+            if(r_RasAlpha)
+                ImGui::ColorEdit3("Particle Color", r_DefaultColor);
+            ImGui::SliderFloat("Size min",              &p_minSize,             .01f,   5.f);
+            ImGui::SliderFloat("Size inc",              &p_incSize,             0.f,    5.f);   //%per second size improves
+            ImGui::SliderFloat("Opacity", &r_MaxOpacity, 0.f, 1.f);
+            ImGui::SliderFloat("T Opacity growing", &r_TimeOpacityGrowing, 0.f, 1.f);
+            ImGui::SliderFloat("T Opacity decreasing", &r_TimeOpacityDecreasing, 0.f, 1.f);
+        }else{   
+            ImGui::ColorEdit4("Dots Color", r_DotsColor);
+        }
     }
 }
 

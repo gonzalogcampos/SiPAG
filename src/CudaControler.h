@@ -6,7 +6,6 @@
 
 enum Data;
 
-
 class CudaControler
 {
     public:
@@ -41,6 +40,8 @@ class CudaControler
         
 		float *h_resource;    //host resource for  copy buffers
         bool importData = false;
+
+        void* devStates;
 
         float *d_x;	    //position x
 	    float *d_y;	    //position y

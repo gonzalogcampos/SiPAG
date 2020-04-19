@@ -12,6 +12,7 @@
 extern int cu_BlockSize;
 extern int print_priority;
 extern bool GPU_Computing;
+extern bool	cu_CopyConstants;
 extern bool paused;
 
 
@@ -20,6 +21,7 @@ extern bool paused;
 * -------- RENDER --------
 * 
 */
+extern bool r_enable;
 extern bool c_autoRotation;
 extern float c_autoRotationV;
 extern float c_Rotation;

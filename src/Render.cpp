@@ -22,6 +22,7 @@
 /*===============================================================*/
 /*======================    VALUES    ===========================*/
 /*===============================================================*/
+bool r_enable = true;
 //Camera
 bool c_autoRotation = false;
 float c_autoRotationV = 1.f;
@@ -89,6 +90,7 @@ void Render::start()
 
 void Render::draw(float dt)
 {
+
     time += dt;
     this->dt = dt;
 
@@ -98,17 +100,20 @@ void Render::draw(float dt)
 	// Clear the screen
     glClearBufferfv(GL_COLOR, 0, r_BackgroundColor);
 
-    //Enable buffers
-    enableAtrib();
+    if(r_enable)
+    {
+        //Enable buffers
+        enableAtrib();
 
-    //Uniform values
-    paseUniforms();
+        //Uniform values
+        paseUniforms();
 
-    //Draw particles
-    glDrawArrays(GL_POINTS, 0, e_MaxParticles);
+        //Draw particles
+        glDrawArrays(GL_POINTS, 0, e_MaxParticles);
 
-    //Disable buffers
-    disableAtrib();
+        //Disable buffers
+        disableAtrib();
+    }
 }
 
 void Render::close()

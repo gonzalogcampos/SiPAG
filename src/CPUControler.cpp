@@ -117,7 +117,8 @@ void CPUControler::step(double dt)
         }
     }//ForLooop
 
-    Render::getInstance()->pasateBuffers(x, y, z, vx, vy, vz, lt, lr);
+    if(r_enable)
+        Render::getInstance()->pasateBuffers(x, y, z, vx, vy, vz, lt, lr);
 }
 
 void CPUControler::close()
