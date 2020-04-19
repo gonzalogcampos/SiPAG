@@ -28,6 +28,7 @@
 //SYSTEM
 int 	cu_BlockSize = 1024;
 bool	cu_CopyConstants = true;
+bool	cu_UpdateRandomKernel = true;
 //EMITTER
 float 	e_Length = .8f;                        	//Emitter radious
 int 	e_Type = 0;                        			//Emitter Type
@@ -323,6 +324,7 @@ void CudaControler::step(double dt)
 	int particles_gridSize = (int)ceil((float)e_MaxParticles/particles_blockSize);
 
 	//Random device States
+	if(cu_UpdateRandomKernel)
 	setupRandomParticle<<<particles_gridSize, particles_blockSize>>> ( (curandState*)devStates, rand()%10000);
 
 	//Kernel particle

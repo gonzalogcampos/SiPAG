@@ -13,6 +13,7 @@ extern int cu_BlockSize;
 extern int print_priority;
 extern bool GPU_Computing;
 extern bool	cu_CopyConstants;
+extern bool cu_UpdateRandomKernel;
 extern bool paused;
 
 

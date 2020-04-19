@@ -63,6 +63,7 @@ void gui_System()
     {
         ImGui::InputInt("Cuda Block Size", &cu_BlockSize);
         ImGui::Checkbox("Pasate Constants", &cu_CopyConstants);
+        ImGui::Checkbox("Update Random Kernel", &cu_UpdateRandomKernel);
     }
 
     ImGui::EndGroup();
