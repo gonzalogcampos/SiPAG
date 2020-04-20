@@ -9,6 +9,9 @@
 #include <Render.h>
 #include <Console.h>
 
+#include <iostream>
+#include <fstream>
+
 
 static int MaxParticles = e_MaxParticles;
 static bool esferico = true;
@@ -19,14 +22,15 @@ static bool defShader = true;
 
 static unsigned int frames_count = 0;
 static float FPS_sum = 0.f;
-static int count = 26;
-static unsigned int NValues[30] = {
-    1, 2, 3, 5, 7, 
-    10, 13, 20, 30, 50, 70, 
-    100, 130, 200, 300, 500, 700, 
-    1000, 1300, 2000, 3000, 5000, 7000, 
-    10000, 13000, 20000, 30000, 50000, 70000,
-    100000};
+static int count = 0;
+static unsigned int NValues[15] = {
+    1, 100, 500, 1000, 5000, 
+    10000, 20000, 30000, 40000, 50000,  
+    60000, 70000, 80000, 90000, 100000};
+
+static bool savingData = false;
+static std::ofstream saveFile;
+
 
 void GUIupdate()
 {
@@ -50,10 +54,12 @@ void GUIupdate()
     }
 
     ImGui::Text("Problem Size: %i", NValues[count]);
+
+    /*
     if(ImGui::Button("Next Problem Size"))
     {
         count++;
-        if(count >= 30)
+        if(count >= 15)
             count = 0;
 
         MaxParticles = NValues[count];
@@ -61,9 +67,23 @@ void GUIupdate()
         frames_count = 0;
         changeSize();
     }
+    */
+   if(!savingData && ImGui::Button("Start saving data"))
+   {
+        savingData = true;
+        MaxParticles = NValues[count];
+        FPS_sum = 0.f;
+        frames_count = 0;
+        changeSize();
+        saveFile.open("data.txt");
+   }   
 
-    ImGui::SetWindowPos(ImVec2(20,20));
-    ImGui::SetWindowSize(ImVec2(520, 680));
+   if(savingData)
+   {
+        ImGui::Text("Saving data...");
+        saveData();
+   }
+   
 
     gui_System();
     gui_Emitter();
@@ -239,4 +259,30 @@ void changeSize()
     CudaControler::getInstance()->resize();
     CPUControler::getInstance()->resize();
     Render::getInstance()->resize();
+}
+
+
+void saveData()
+{
+
+    if(frames_count >3000)
+    {
+
+        saveFile<<FPS_sum / frames_count <<"\n";
+
+        count++;
+        if(count >= 15)
+        {
+            count = 0;
+            savingData = false;
+            saveFile.close();
+        }
+
+        MaxParticles = NValues[count];
+        FPS_sum = 0.f;
+        frames_count = 0;
+        changeSize();
+    }
+
+    
 }

@@ -7,3 +7,4 @@ void gui_Render();
 void gui_Particle();
 void changeSize();
 void gui_Wind();
+void saveData();

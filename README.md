@@ -7,3 +7,4 @@ GPU calculed particle system &amp; OpenGL Render
 * [SiPAG v1.5](https://github.com/gogarcia/SiPAG/raw/master/releases/SiPAG_v1.4.zip)
 * [SiPAG v1.5](https://github.com/gogarcia/SiPAG/raw/master/releases/SiPAG_v1.5.zip)
 * [SiPAG v1.6 (Data tool)](https://github.com/gogarcia/SiPAG/raw/master/releases/SiPAG_v1.6_DataTool.zip)
+* [SiPAG v1.7 (Data tool)](https://github.com/gogarcia/SiPAG/raw/master/releases/SiPAG_v1.7_DataTool.zip)
