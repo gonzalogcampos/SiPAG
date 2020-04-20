@@ -17,8 +17,17 @@ static bool espiral = false;
 static bool defShader = true;
 
 
-static int frames_count = 0;
+static unsigned int frames_count = 0;
 static float FPS_sum = 0.f;
+static int count = 26;
+static unsigned int NValues[30] = {
+    1, 2, 3, 5, 7, 
+    10, 13, 20, 30, 50, 70, 
+    100, 130, 200, 300, 500, 700, 
+    1000, 1300, 2000, 3000, 5000, 7000, 
+    10000, 13000, 20000, 30000, 50000, 70000,
+    100000};
+
 void GUIupdate()
 {
     ImGui_ImplOpenGL3_NewFrame();
@@ -39,6 +48,20 @@ void GUIupdate()
         FPS_sum = 0.f;
         frames_count = 0;
     }
+
+    ImGui::Text("Problem Size: %i", NValues[count]);
+    if(ImGui::Button("Next Problem Size"))
+    {
+        count++;
+        if(count >= 30)
+            count = 0;
+
+        MaxParticles = NValues[count];
+        FPS_sum = 0.f;
+        frames_count = 0;
+        changeSize();
+    }
+
     ImGui::SetWindowPos(ImVec2(20,20));
     ImGui::SetWindowSize(ImVec2(520, 680));
 
