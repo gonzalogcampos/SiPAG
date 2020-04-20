@@ -48,8 +48,8 @@ int 	e_EmissionFrec 			= 100;            		//In 1/1000
 int 	e_MaxParticles 			= 30000;           		//Max Particles
 
 //PARTICLES
-float 	p_LifeTime 				= 3.f;                  //Life of the particle in seconds
-float 	p_RLifeTime 			= 0.5f;                 //% of random in life
+float 	p_LifeTime 				= .2f;                  //Life of the particle in seconds
+float 	p_RLifeTime 			= 0.1f;                 //% of random in life
 float 	p_InitVelocity[3]		= {0.0f, 1.0f, 0.0f};	//Z init velocity
 float 	p_RInitVelocity[3] 		= {0.5f, 0.5f, 0.5f}; 	//Z init velocity
 float 	p_VelocityDecay 		= 1.0f;                 //% per second velocity decays
