@@ -37,6 +37,8 @@ class CudaControler
         void cudaSafeCall(cudaError err);
         void printData(Data d);
         void copyConstants();
+        void mapResources();
+        void unmapResources();
         
 		float *h_resource;    //host resource for copy buffers usually unused
         bool importData = false;

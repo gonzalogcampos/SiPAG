@@ -256,9 +256,9 @@ void gui_Wind()
 void changeSize()
 {
     e_MaxParticles = MaxParticles;
+    Render::getInstance()->resize();
     CudaControler::getInstance()->resize();
     CPUControler::getInstance()->resize();
-    Render::getInstance()->resize();
 }
 
 
