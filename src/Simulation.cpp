@@ -10,7 +10,9 @@
 #include <OClock.h>
 #include <GUI.h>
 #include <Values.h>
+
 #include <SOIL.h>
+
 #include <imGUI/imgui.h>
 #include <imGUI/imgui_impl_glfw.h>
 #include <imGUI/imgui_impl_opengl3.h>
@@ -25,7 +27,6 @@
 bool GPU_Computing = true;
 bool CUDA = true;
 bool paused = false;
-
 
 
 CudaControler *cudaControler;
@@ -70,7 +71,7 @@ int start(int argv, char **argc)
         return 1;
     
     std::string title;
-    if(CUDA)title = "SiPAG | " + cudaControler->getDevice();
+    if(CUDA)title = "SiPAG | " + std::string(cudaControler->getDevice());
     else title =  "SiPAG | No available CUDA devices";
     window = glfwCreateWindow(1080, 720, title.c_str(), NULL, NULL);
     GLFWimage icons[1];

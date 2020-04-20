@@ -19,6 +19,4 @@ class CPUControler
         void step(double dt);
         void start();
         void close();
-
-
 };

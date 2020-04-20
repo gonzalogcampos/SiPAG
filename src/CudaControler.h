@@ -38,10 +38,13 @@ class CudaControler
         void printData(Data d);
         void copyConstants();
         
-		float *h_resource;    //host resource for  copy buffers
+		float *h_resource;    //host resource for copy buffers usually unused
         bool importData = false;
 
-        void* devStates;
+        /*
+        Device Buffers
+        */
+        void* devStates;//random state
 
         float *d_x;	    //position x
 	    float *d_y;	    //position y
@@ -54,6 +57,9 @@ class CudaControler
 	    float *d_lt;	//life time
 	    float *d_lr;	//life remaining
 
+        /*
+        OpenGL Buffers
+        */
         cudaGraphicsResource_t resource_x = 0;
         cudaGraphicsResource_t resource_y = 0;
         cudaGraphicsResource_t resource_z = 0;        

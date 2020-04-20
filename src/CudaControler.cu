@@ -1,24 +1,35 @@
 //MIT License
 //Copyright (c) 2019 Gonzalo G Campos
 
+
+//Include headers
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
-
 #include <Windows.h>
 
-#include "cuda_runtime.h"
-#include "device_launch_parameters.h"
-
+//Includes for cuda
+#include <cuda_runtime.h>
+#include <device_launch_parameters.h>
 #include <curand.h>
 #include <curand_kernel.h>
 #include <cuda_gl_interop.h>
 
+//Include cuda header with noise functions
 #include <CudaNoiseFunc.cuh>
 
+//Include our headers
 #include <CudaControler.h>
 #include <Values.h>
 #include <Console.h>
+
+
+
+
+
+
+
+
 
 
 /*===============================================================*/
@@ -44,7 +55,7 @@ float 	p_RInitVelocity[3] 		= {0.5f, 0.5f, 0.5f}; 	//Z init velocity
 float 	p_VelocityDecay 		= 1.0f;                 //% per second velocity decays
 
 //WIND
-float 	currentTime 			= 0.f;
+double 	currentTime 			= 0.f;
 float 	timeEv 					= 1.f;
 float 	w_Constant[3] 			= {0.2f, 0.2f, 0.f};
 
@@ -61,12 +72,6 @@ float 	w_2Amp[3] 				= {.4f, .4f, .4f};
 float 	w_2Size 				= 1.f;
 float 	w_2lacunarity 			= 1.f;
 float 	w_2decay 				= 1.f;
-/*===============================================================*/
-/*===============================================================*/
-
-
-
-
 
 enum Data
 {
@@ -80,9 +85,23 @@ enum Data
 	PARTICLE_LR
 };
 
-//Constants
+/*===============================================================*/
+/*===============================================================*/
+
+
+
+
+
+
+
+
+
+
+/*===============================================================*/
+/*===============    CUDA Constant Memory    ====================*/
+/*===============================================================*/
+
 //Time
-__constant__ float d_time[1];
 __constant__ float d_timeEv[1];
 //Life
 __constant__ float d_rLife[1], d_life[1];
@@ -103,6 +122,23 @@ __constant__ bool d_2[1];
 __constant__ int d_2n[1];
 __constant__ float d_2Size[1], d_2lacunarity[1], d_2decay[1], d_2Amp[3];
 
+/*===============================================================*/
+/*===============================================================*/
+
+
+
+
+
+
+
+
+
+
+
+/*===============================================================*/
+/*===================    CUDA Kernels    ========================*/
+/*===============================================================*/
+
 __global__ void setupRandomParticle( curandState * state, unsigned long seed)
 {
 	int idx = blockIdx.x * blockDim.x + threadIdx.x;
@@ -114,7 +150,7 @@ __global__ void setupRandomParticle( curandState * state, unsigned long seed)
 __global__ void kernelParticle(float *x, float *y, float *z,
 							float *vx, float *vy, float *vz,
 							float *lt, float *lr,
-							curandState* state, double dt)
+							curandState* state, double dt, double t)
 {
 
 	// Get our global thread ID
@@ -197,7 +233,7 @@ __global__ void kernelParticle(float *x, float *y, float *z,
 			if(d_1[0])
 			{
 				float3 pos = make_float3(x[id], y[id], z[id]);
-				float time = d_time[0]*d_timeEv[0];
+				float time = t*d_timeEv[0];
 				float pbx = d_1Amp[0]*repeaterPerlin(pos, time, d_1Size[0], 2989,   d_1n[0], d_1lacunarity[0], d_1decay[0]);
 				float pby = d_1Amp[1]*repeaterPerlin(pos, time, d_1Size[0], 841126, d_1n[0], d_1lacunarity[0], d_1decay[0]);
 				float pbz = d_1Amp[2]*repeaterPerlin(pos, time, d_1Size[0], 189277, d_1n[0], d_1lacunarity[0], d_1decay[0]);
@@ -210,7 +246,7 @@ __global__ void kernelParticle(float *x, float *y, float *z,
 			if(d_2[0])
 			{
 				float3 pos = make_float3(x[id], y[id], z[id]);
-				float time = d_time[0]*d_timeEv[0];
+				float time = t*d_timeEv[0];
 				float pbx = d_2Amp[0]*repeaterPerlin(pos, time, d_2Size[0], 2989,   d_2n[0], d_2lacunarity[0], d_2decay[0]);
 				float pby = d_2Amp[1]*repeaterPerlin(pos, time, d_2Size[0], 841126, d_2n[0], d_2lacunarity[0], d_2decay[0]);
 				float pbz = d_2Amp[2]*repeaterPerlin(pos, time, d_2Size[0], 189277, d_2n[0], d_2lacunarity[0], d_2decay[0]);
@@ -232,6 +268,22 @@ __global__ void kernelParticle(float *x, float *y, float *z,
 		}
 	}
 }
+
+/*===============================================================*/
+/*===============================================================*/
+
+
+
+
+
+
+
+
+
+
+/*===============================================================*/
+/*=====================    Functions   ==========================*/
+/*===============================================================*/
 
 int CudaControler::testDevices()
 {
@@ -259,6 +311,7 @@ int CudaControler::testDevices()
 		return 0;
 }
 
+
 std::string CudaControler::getDevice()
 {
 	cudaDeviceProp devProp;
@@ -266,9 +319,9 @@ std::string CudaControler::getDevice()
 	return devProp.name;
 }
 
+
 void CudaControler::start()
 {
-
 	// Size, in bytes, of Particles vector host
 	size_t bytes = e_MaxParticles*sizeof(float);
 
@@ -281,12 +334,14 @@ void CudaControler::start()
 	setupRandomParticle<<<particles_gridSize, particles_blockSize>>> ( (curandState*)devStates, rand()%10000);
 }
 
+
 void CudaControler::close()
 {
 	// Release host memory
 	free(h_resource);
 	cudaFree(devStates);
 }
+
 
 void CudaControler::step(double dt)
 {
@@ -326,30 +381,33 @@ void CudaControler::step(double dt)
 
 	//Random device States
 	if(cu_UpdateRandomKernel)
-	setupRandomParticle<<<particles_gridSize, particles_blockSize>>> ( (curandState*)devStates, rand()%10000);
+		setupRandomParticle<<<particles_gridSize, particles_blockSize>>> ( (curandState*)devStates, rand()%10000);
 
 	//Kernel particle
-	kernelParticle<<<particles_gridSize, particles_blockSize>>>(d_x, d_y, d_z, d_vx, d_vy, d_vz, d_lt, d_lr, (curandState*)devStates, dt);
+	kernelParticle<<<particles_gridSize, particles_blockSize>>>(d_x, d_y, d_z, d_vx, d_vy, d_vz, d_lt, d_lr, (curandState*)devStates, dt, currentTime);
 	
 	//Reset the buffers
 	if(r_enable)
 	{
-		cudaGraphicsUnmapResources(1, &resource_x);
-		cudaGraphicsUnmapResources(1, &resource_y);
-		cudaGraphicsUnmapResources(1, &resource_z);
-		cudaGraphicsUnmapResources(1, &resource_vx);
-		cudaGraphicsUnmapResources(1, &resource_vy);
-		cudaGraphicsUnmapResources(1, &resource_vz);
-		cudaGraphicsUnmapResources(1, &resource_lt);
-		cudaGraphicsUnmapResources(1, &resource_lr);
+		cudaSafeCall( cudaGraphicsUnmapResources(1, &resource_x) );
+		cudaSafeCall( cudaGraphicsUnmapResources(1, &resource_y) );
+		cudaSafeCall( cudaGraphicsUnmapResources(1, &resource_z) );
+		cudaSafeCall( cudaGraphicsUnmapResources(1, &resource_vx) );
+		cudaSafeCall( cudaGraphicsUnmapResources(1, &resource_vy) );
+		cudaSafeCall( cudaGraphicsUnmapResources(1, &resource_vz) );
+		cudaSafeCall( cudaGraphicsUnmapResources(1, &resource_lt) );
+		cudaSafeCall( cudaGraphicsUnmapResources(1, &resource_lr) );
 	}
 }
+
 
 void CudaControler::resize()
 {
 	close();
 	start();
+	copyConstants();
 }
+
 
 void CudaControler::conectBuffers(unsigned int bufferX,unsigned int bufferY, unsigned int bufferZ,
 									unsigned int bufferVX,unsigned int bufferVY, unsigned int bufferVZ, 
@@ -364,6 +422,7 @@ void CudaControler::conectBuffers(unsigned int bufferX,unsigned int bufferY, uns
 	cudaSafeCall( cudaGraphicsGLRegisterBuffer(&resource_lt, (GLuint)bufferLT, cudaGraphicsRegisterFlagsNone) );
 	cudaSafeCall( cudaGraphicsGLRegisterBuffer(&resource_lr, (GLuint)bufferLR, cudaGraphicsRegisterFlagsNone) );
 }
+
 
 void CudaControler::cudaSafeCall(cudaError err)
 {
@@ -429,6 +488,7 @@ void CudaControler::printData(Data d)
 	cPrint("\n", 1);
 }
 
+
 void CudaControler::expData(float* x, float*  y, float* z, float* vx, float* vy, float* vz, float* lt, float* lr)
 {
 	size_t bytes = e_MaxParticles*sizeof(float);
@@ -444,6 +504,7 @@ void CudaControler::expData(float* x, float*  y, float* z, float* vx, float* vy,
 
 
 }
+
 
 void CudaControler::impData(float* x, float*  y, float* z, float* vx, float* vy, float* vz, float* lt, float* lr)
 {
@@ -462,31 +523,33 @@ void CudaControler::impData(float* x, float*  y, float* z, float* vx, float* vy,
 
 void CudaControler::copyConstants()
 {
-	cudaSafeCall(cudaMemcpyToSymbol(d_rLife, 			&(p_RLifeTime),			sizeof(float)));
-	cudaSafeCall(cudaMemcpyToSymbol(d_life, 			&(p_LifeTime), 			sizeof(float)));
-	cudaSafeCall(cudaMemcpyToSymbol(d_vDecay, 			&(p_VelocityDecay), 	sizeof(float)));
-	cudaSafeCall(cudaMemcpyToSymbol(d_initVelocity, 	&(p_InitVelocity), 		3*sizeof(float)));
-	cudaSafeCall(cudaMemcpyToSymbol(d_rInitVelocity, 	&(p_RInitVelocity), 	3*sizeof(float)));
+		cudaSafeCall(cudaMemcpyToSymbol(d_rLife, 			&(p_RLifeTime),			sizeof(float)));
+		cudaSafeCall(cudaMemcpyToSymbol(d_life, 			&(p_LifeTime), 			sizeof(float)));
+		cudaSafeCall(cudaMemcpyToSymbol(d_vDecay, 			&(p_VelocityDecay), 	sizeof(float)));
+		cudaSafeCall(cudaMemcpyToSymbol(d_initVelocity, 	&(p_InitVelocity), 		3*sizeof(float)));
+		cudaSafeCall(cudaMemcpyToSymbol(d_rInitVelocity, 	&(p_RInitVelocity), 	3*sizeof(float)));
 
-	cudaSafeCall(cudaMemcpyToSymbol(d_maxParticles, 	&(e_MaxParticles), 		sizeof(int)));
-	cudaSafeCall(cudaMemcpyToSymbol(d_emitterFrec, 		&(e_EmissionFrec), 		sizeof(int)));
-	cudaSafeCall(cudaMemcpyToSymbol(d_emitterLength, 	&(e_Length), 			sizeof(float)));
-	cudaSafeCall(cudaMemcpyToSymbol(d_emitterType, 		&(e_Type), 				sizeof(int)));
+		cudaSafeCall(cudaMemcpyToSymbol(d_maxParticles, 	&(e_MaxParticles), 		sizeof(int)));
+		cudaSafeCall(cudaMemcpyToSymbol(d_emitterFrec, 		&(e_EmissionFrec), 		sizeof(int)));
+		cudaSafeCall(cudaMemcpyToSymbol(d_emitterLength, 	&(e_Length), 			sizeof(float)));
+		cudaSafeCall(cudaMemcpyToSymbol(d_emitterType, 		&(e_Type), 				sizeof(int)));
 
-	cudaSafeCall(cudaMemcpyToSymbol(d_time, 			&(currentTime), 		sizeof(float)));
-	cudaSafeCall(cudaMemcpyToSymbol(d_timeEv, 			&(timeEv), 				sizeof(float)));
+		cudaSafeCall(cudaMemcpyToSymbol(d_timeEv, 			&(timeEv), 				sizeof(float)));
 
-	cudaSafeCall(cudaMemcpyToSymbol(d_constant,			&(w_Constant), 			3*sizeof(float)));
-	cudaSafeCall(cudaMemcpyToSymbol(d_1,				&(w_1), 				sizeof(bool)));
-	cudaSafeCall(cudaMemcpyToSymbol(d_2,				&(w_2), 				sizeof(bool)));
-	cudaSafeCall(cudaMemcpyToSymbol(d_1Amp,				&(w_1Amp), 				3*sizeof(float)));
-	cudaSafeCall(cudaMemcpyToSymbol(d_2Amp,				&(w_2Amp), 				3*sizeof(float)));
-	cudaSafeCall(cudaMemcpyToSymbol(d_1n,				&(w_1n), 				sizeof(int)));
-	cudaSafeCall(cudaMemcpyToSymbol(d_2n,				&(w_2n), 				sizeof(int)));
-	cudaSafeCall(cudaMemcpyToSymbol(d_1Size,			&(w_1Size), 			sizeof(float)));
-	cudaSafeCall(cudaMemcpyToSymbol(d_2Size,			&(w_2Size), 			sizeof(float)));
-	cudaSafeCall(cudaMemcpyToSymbol(d_1lacunarity,		&(w_1lacunarity), 		sizeof(float)));
-	cudaSafeCall(cudaMemcpyToSymbol(d_2lacunarity,		&(w_2lacunarity), 		sizeof(float)));
-	cudaSafeCall(cudaMemcpyToSymbol(d_1decay,			&(w_1decay), 			sizeof(float)));
-	cudaSafeCall(cudaMemcpyToSymbol(d_2decay,			&(w_2decay), 			sizeof(float)));
+		cudaSafeCall(cudaMemcpyToSymbol(d_constant,			&(w_Constant), 			3*sizeof(float)));
+		cudaSafeCall(cudaMemcpyToSymbol(d_1,				&(w_1), 				sizeof(bool)));
+		cudaSafeCall(cudaMemcpyToSymbol(d_2,				&(w_2), 				sizeof(bool)));
+		cudaSafeCall(cudaMemcpyToSymbol(d_1Amp,				&(w_1Amp), 				3*sizeof(float)));
+		cudaSafeCall(cudaMemcpyToSymbol(d_2Amp,				&(w_2Amp), 				3*sizeof(float)));
+		cudaSafeCall(cudaMemcpyToSymbol(d_1n,				&(w_1n), 				sizeof(int)));
+		cudaSafeCall(cudaMemcpyToSymbol(d_2n,				&(w_2n), 				sizeof(int)));
+		cudaSafeCall(cudaMemcpyToSymbol(d_1Size,			&(w_1Size), 			sizeof(float)));
+		cudaSafeCall(cudaMemcpyToSymbol(d_2Size,			&(w_2Size), 			sizeof(float)));
+		cudaSafeCall(cudaMemcpyToSymbol(d_1lacunarity,		&(w_1lacunarity), 		sizeof(float)));
+		cudaSafeCall(cudaMemcpyToSymbol(d_2lacunarity,		&(w_2lacunarity), 		sizeof(float)));
+		cudaSafeCall(cudaMemcpyToSymbol(d_1decay,			&(w_1decay), 			sizeof(float)));
+		cudaSafeCall(cudaMemcpyToSymbol(d_2decay,			&(w_2decay), 			sizeof(float)));
 }
+
+/*===============================================================*/
+/*===============================================================*/
