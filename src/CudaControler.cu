@@ -150,13 +150,15 @@ __global__ void setupRandomParticle( curandState * state, unsigned long seed)
 __global__ void kernelParticle(float *x, float *y, float *z,
 							float *vx, float *vy, float *vz,
 							float *lt, float *lr,
-							curandState* state, double dt, double t)
+							curandState* state, unsigned int seed,
+							double dt, double t)
 {
 
 	// Get our global thread ID
 	int id = blockIdx.x*blockDim.x+threadIdx.x;
 	if (id < d_maxParticles[0])
 	{
+    	curand_init ( seed, id/2, 0, &state[id] );
 		/* curand works like rand - except that it takes a state as a parameter */
 		if(lr[id]<0.f)
 		{
@@ -352,8 +354,8 @@ void CudaControler::step(double dt)
 		copyConstants();
 
 	//Maping the OpenGL buffers for CUDA
-	if(r_enable)
-		mapResources();
+	//if(r_enable)
+		//mapResources();
 
 	//Execute Kernel
 	// Number of threads in each block
@@ -362,15 +364,15 @@ void CudaControler::step(double dt)
 	int particles_gridSize = (int)ceil((float)e_MaxParticles/particles_blockSize);
 
 	//Random device States
-	if(cu_UpdateRandomKernel)
-		setupRandomParticle<<<particles_gridSize, particles_blockSize>>> ( (curandState*)devStates, rand()%10000);
+	//if(cu_UpdateRandomKernel)
+		//setupRandomParticle<<<particles_gridSize, particles_blockSize>>> ( (curandState*)devStates, rand()%10000);
 
 	//Kernel particle
-	kernelParticle<<<particles_gridSize, particles_blockSize>>>(d_x, d_y, d_z, d_vx, d_vy, d_vz, d_lt, d_lr, (curandState*)devStates, dt, currentTime);
+	kernelParticle<<<particles_gridSize, particles_blockSize>>>(d_x, d_y, d_z, d_vx, d_vy, d_vz, d_lt, d_lr, (curandState*)devStates, rand()%10000, dt, currentTime);
 	
 	//Reset the buffers
-	if(r_enable)
-		unmapResources();
+	//if(r_enable)
+		//unmapResources();
 }
 
 
@@ -389,6 +391,8 @@ void CudaControler::conectBuffers(unsigned int bufferX,unsigned int bufferY, uns
 									unsigned int bufferVX,unsigned int bufferVY, unsigned int bufferVZ, 
 									unsigned int bufferLT, unsigned int bufferLR)
 {	
+	unmapResources();
+
 	cudaSafeCall( cudaGraphicsGLRegisterBuffer(&resource_x, (GLuint)bufferX, cudaGraphicsRegisterFlagsNone) );
 	cudaSafeCall( cudaGraphicsGLRegisterBuffer(&resource_y, (GLuint)bufferY, cudaGraphicsRegisterFlagsNone) );
 	cudaSafeCall( cudaGraphicsGLRegisterBuffer(&resource_z, (GLuint)bufferZ, cudaGraphicsRegisterFlagsNone) );
@@ -397,6 +401,8 @@ void CudaControler::conectBuffers(unsigned int bufferX,unsigned int bufferY, uns
 	cudaSafeCall( cudaGraphicsGLRegisterBuffer(&resource_vz, (GLuint)bufferVZ, cudaGraphicsRegisterFlagsNone) );
 	cudaSafeCall( cudaGraphicsGLRegisterBuffer(&resource_lt, (GLuint)bufferLT, cudaGraphicsRegisterFlagsNone) );
 	cudaSafeCall( cudaGraphicsGLRegisterBuffer(&resource_lr, (GLuint)bufferLR, cudaGraphicsRegisterFlagsNone) );
+
+	mapResources();
 }
 
 
@@ -529,35 +535,43 @@ void CudaControler::copyConstants()
 
 void CudaControler::mapResources()
 {
-	size_t bytes = e_MaxParticles*sizeof(float);
-	cudaSafeCall( cudaGraphicsMapResources(1, &resource_x) );
-	cudaSafeCall( cudaGraphicsMapResources(1, &resource_y) );
-	cudaSafeCall( cudaGraphicsMapResources(1, &resource_z) );	
-	cudaSafeCall( cudaGraphicsMapResources(1, &resource_vx) );
-	cudaSafeCall( cudaGraphicsMapResources(1, &resource_vy) );
-	cudaSafeCall( cudaGraphicsMapResources(1, &resource_vz) );
-	cudaSafeCall( cudaGraphicsMapResources(1, &resource_lt) );
-	cudaSafeCall( cudaGraphicsMapResources(1, &resource_lr) );
-	cudaSafeCall( cudaGraphicsResourceGetMappedPointer((void **)&d_x, &bytes, resource_x) );
-	cudaSafeCall( cudaGraphicsResourceGetMappedPointer((void **)&d_y, &bytes, resource_y) );
-	cudaSafeCall( cudaGraphicsResourceGetMappedPointer((void **)&d_z, &bytes, resource_z) );	
-	cudaSafeCall( cudaGraphicsResourceGetMappedPointer((void **)&d_vx, &bytes, resource_vx) );
-	cudaSafeCall( cudaGraphicsResourceGetMappedPointer((void **)&d_vy, &bytes, resource_vy) );
-	cudaSafeCall( cudaGraphicsResourceGetMappedPointer((void **)&d_vz, &bytes, resource_vz) );
-	cudaSafeCall( cudaGraphicsResourceGetMappedPointer((void **)&d_lt, &bytes, resource_lt) );
-	cudaSafeCall( cudaGraphicsResourceGetMappedPointer((void **)&d_lr, &bytes, resource_lr) );
+	if(!mapped)
+	{
+		size_t bytes = e_MaxParticles*sizeof(float);
+		cudaSafeCall( cudaGraphicsMapResources(1, &resource_x) );
+		cudaSafeCall( cudaGraphicsMapResources(1, &resource_y) );
+		cudaSafeCall( cudaGraphicsMapResources(1, &resource_z) );	
+		cudaSafeCall( cudaGraphicsMapResources(1, &resource_vx) );
+		cudaSafeCall( cudaGraphicsMapResources(1, &resource_vy) );
+		cudaSafeCall( cudaGraphicsMapResources(1, &resource_vz) );
+		cudaSafeCall( cudaGraphicsMapResources(1, &resource_lt) );
+		cudaSafeCall( cudaGraphicsMapResources(1, &resource_lr) );
+		cudaSafeCall( cudaGraphicsResourceGetMappedPointer((void **)&d_x, &bytes, resource_x) );
+		cudaSafeCall( cudaGraphicsResourceGetMappedPointer((void **)&d_y, &bytes, resource_y) );
+		cudaSafeCall( cudaGraphicsResourceGetMappedPointer((void **)&d_z, &bytes, resource_z) );	
+		cudaSafeCall( cudaGraphicsResourceGetMappedPointer((void **)&d_vx, &bytes, resource_vx) );
+		cudaSafeCall( cudaGraphicsResourceGetMappedPointer((void **)&d_vy, &bytes, resource_vy) );
+		cudaSafeCall( cudaGraphicsResourceGetMappedPointer((void **)&d_vz, &bytes, resource_vz) );
+		cudaSafeCall( cudaGraphicsResourceGetMappedPointer((void **)&d_lt, &bytes, resource_lt) );
+		cudaSafeCall( cudaGraphicsResourceGetMappedPointer((void **)&d_lr, &bytes, resource_lr) );
+		mapped = true;
+	}
 }
 
 void CudaControler::unmapResources()
 {
-	cudaSafeCall( cudaGraphicsUnmapResources(1, &resource_x) );
-	cudaSafeCall( cudaGraphicsUnmapResources(1, &resource_y) );
-	cudaSafeCall( cudaGraphicsUnmapResources(1, &resource_z) );
-	cudaSafeCall( cudaGraphicsUnmapResources(1, &resource_vx) );
-	cudaSafeCall( cudaGraphicsUnmapResources(1, &resource_vy) );
-	cudaSafeCall( cudaGraphicsUnmapResources(1, &resource_vz) );
-	cudaSafeCall( cudaGraphicsUnmapResources(1, &resource_lt) );
-	cudaSafeCall( cudaGraphicsUnmapResources(1, &resource_lr) );
+	if(mapped)
+	{
+		cudaSafeCall( cudaGraphicsUnmapResources(1, &resource_x) );
+		cudaSafeCall( cudaGraphicsUnmapResources(1, &resource_y) );
+		cudaSafeCall( cudaGraphicsUnmapResources(1, &resource_z) );
+		cudaSafeCall( cudaGraphicsUnmapResources(1, &resource_vx) );
+		cudaSafeCall( cudaGraphicsUnmapResources(1, &resource_vy) );
+		cudaSafeCall( cudaGraphicsUnmapResources(1, &resource_vz) );
+		cudaSafeCall( cudaGraphicsUnmapResources(1, &resource_lt) );
+		cudaSafeCall( cudaGraphicsUnmapResources(1, &resource_lr) );
+		mapped = false;
+	}
 }
 
 /*===============================================================*/

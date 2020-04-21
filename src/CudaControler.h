@@ -71,4 +71,6 @@ class CudaControler
         cudaGraphicsResource_t resource_lt = 0;
         cudaGraphicsResource_t resource_lr = 0;
 
+        bool mapped = false;
+
 };
