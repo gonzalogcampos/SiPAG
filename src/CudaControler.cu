@@ -158,6 +158,7 @@ __global__ void kernelParticle(float *x, float *y, float *z,
 	int id = blockIdx.x*blockDim.x+threadIdx.x;
 	if (id < d_maxParticles[0])
 	{
+		/* Curand init for state param*/
     	curand_init ( seed, id/2, 0, &state[id] );
 		/* curand works like rand - except that it takes a state as a parameter */
 		if(lr[id]<0.f)
@@ -354,8 +355,8 @@ void CudaControler::step(double dt)
 		copyConstants();
 
 	//Maping the OpenGL buffers for CUDA
-	//if(r_enable)
-		//mapResources();
+	if(r_enable)
+		mapResources();
 
 	//Execute Kernel
 	// Number of threads in each block
@@ -371,8 +372,8 @@ void CudaControler::step(double dt)
 	kernelParticle<<<particles_gridSize, particles_blockSize>>>(d_x, d_y, d_z, d_vx, d_vy, d_vz, d_lt, d_lr, (curandState*)devStates, rand()%10000, dt, currentTime);
 	
 	//Reset the buffers
-	//if(r_enable)
-		//unmapResources();
+	if(r_enable)
+		unmapResources();
 }
 
 
@@ -483,8 +484,6 @@ void CudaControler::expData(float* x, float*  y, float* z, float* vx, float* vy,
 	cudaSafeCall(cudaMemcpy( vz, d_vz, bytes, cudaMemcpyDeviceToHost));
 	cudaSafeCall(cudaMemcpy( lt, d_lt, bytes, cudaMemcpyDeviceToHost));
 	cudaSafeCall(cudaMemcpy( lr, d_lr, bytes, cudaMemcpyDeviceToHost));
-
-
 }
 
 
