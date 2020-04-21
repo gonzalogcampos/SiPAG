@@ -1,6 +1,9 @@
 //MIT License
 //Copyright (c) 2019 Gonzalo G Campos
 
+/* PRAGMA */
+#pragma once
+
 
 // Source code for vertex shader
 static const GLchar* dots_vertex[] =

@@ -119,7 +119,8 @@ void loop(void)
     else
         cpuWasPlaying = true;
     
-    while (!glfwWindowShouldClose(window)) {
+    while (!glfwWindowShouldClose(window))
+    {
         dt = oclock.step();
 
         if(CUDA && GPU_Computing && !paused)

@@ -275,6 +275,7 @@ void Render::resize()
     CudaControler::getInstance()->conectBuffers(bufferX, bufferY, bufferZ, bufferVX, bufferVY, bufferVZ, bufferLT, bufferLR);
 }
 
+
 std::string Render::loadShader(char* path)
 {
     std::string line, allLines;
@@ -295,8 +296,6 @@ std::string Render::loadShader(char* path)
 
     return allLines;
 }
-
-
 
 
 void Render::enableAtrib()
@@ -326,6 +325,7 @@ void Render::enableAtrib()
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
+
 void Render::disableAtrib()
 {
     glDisableVertexAttribArray(0);
@@ -337,7 +337,6 @@ void Render::disableAtrib()
     glBindVertexArray(0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
-
 
 
 void Render::setTexture(char* file)
@@ -380,6 +379,7 @@ void Render::paseUniforms()
     }
     
 }
+
 
 void Render::changeShader()
 {
