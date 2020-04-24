@@ -13,14 +13,14 @@
 // Hashing function (used for fast on-device pseudorandom numbers for randomness in noise)
 __device__ unsigned int hash(unsigned int seed)
 {
-	seed = (seed + 0x7ed55d16) + (seed << 12);
-	seed = (seed ^ 0xc761c23c) ^ (seed >> 19);
-	seed = (seed + 0x165667b1) + (seed << 5);
-	seed = (seed + 0xd3a2646c) ^ (seed << 9);
-	seed = (seed + 0xfd7046c5) + (seed << 3);
-	seed = (seed ^ 0xb55a4f09) ^ (seed >> 16);
+	seed = (seed + 0x7ed55d16) + (seed << 12) & 0xffffffff;
+	seed = (seed ^ 0xc761c23c) ^ (seed >> 19) & 0xffffffff;
+	seed = (seed + 0x165667b1) + (seed << 5) & 0xffffffff;
+	seed = (seed + 0xd3a2646c) ^ (seed << 9) & 0xffffffff;
+	seed = (seed + 0xfd7046c5) + (seed << 3) & 0xffffffff;
+	seed = (seed ^ 0xb55a4f09) ^ (seed >> 16) & 0xffffffff;
 
-	return seed;
+	return seed & 0xffffffff;
 }
 
 // Maps from the signed range [0, 1] to unsigned [-1, 1]
@@ -35,6 +35,19 @@ __device__ float mapToSigned(float input)
 __device__ unsigned int randomIntGrid(float x, float y, float z, float t, float seed = 0.0f)
 {
 	return hash((unsigned int)(x * 1723.0f + y * 93241.0f + z * 149812.0f + t * 892.f + 3824 + seed));
+}
+
+__device__ float pseudoRandom(unsigned int seed)
+{
+	seed = (seed + 0x7ed55d16) + (seed << 12) & 0xffffffff;
+	seed = (seed ^ 0xc761c23c) ^ (seed >> 19) & 0xffffffff;
+	seed = (seed + 0x165667b1) + (seed << 5) & 0xffffffff;
+	seed = (seed + 0xd3a2646c) ^ (seed << 9) & 0xffffffff;
+	seed = (seed + 0xfd7046c5) + (seed << 3) & 0xffffffff;
+	seed = (seed ^ 0xb55a4f09) ^ (seed >> 16) & 0xffffffff;
+	seed = seed & 0xffffffff;
+	int r = seed%100000;
+    return (r/100000.f);
 }
 
 // Helper functions for noise

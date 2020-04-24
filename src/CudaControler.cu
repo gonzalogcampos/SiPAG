@@ -159,20 +159,20 @@ __global__ void kernelParticle(float *x, float *y, float *z,
 	if (id < d_maxParticles[0])
 	{
 		/* Curand init for state param*/
-    	curand_init ( seed, id/2, 0, &state[id] );
+    	//curand_init ( seed, id/2, 0, &state[id] );
 		/* curand works like rand - except that it takes a state as a parameter */
 		if(lr[id]<0.f)
 		{
 			//Space to create a particle
-			int r = curand(&state[id])%1000;
+			float r = pseudoRandom(id*t)*1000;
 			if(r<d_emitterFrec[0])
 			{
 				//Fist of all choose the position
 				if(d_emitterType[0]==2)
 				{
-					r=curand(&state[id])%1000;
-					float theta =  (r/1000.f) * 2.0 * 3.14159265359;
-					float phi = acos(2.0 *  (r/1000.f) - 1.0) - (3.14159265359/2);
+					r = pseudoRandom(id * t * 2);
+					float theta =  r * 2.0 * 3.14159265359;
+					float phi = acos(2.0 * r - 1.0) - (3.14159265359/2);
 					float sinTheta = sin(theta);
 					float cosTheta = cos(theta);
 					float sinPhi = sin(phi);
@@ -183,16 +183,16 @@ __global__ void kernelParticle(float *x, float *y, float *z,
 				}
 				else if(d_emitterType[0]==1)
 				{
-					r=curand(&state[id])%1000;
-					x[id] = d_emitterLength[0]*((r/1000.f)-.5f);
+					r = pseudoRandom(id * t * 3);
+					x[id] = d_emitterLength[0]*(r-.5f);
 					y[id] = 0.f;
 					z[id] = 0.f;
 				}else
 				{
-					r=curand(&state[id])%1000;
-					float theta = (r/1000.f) * 2.0 * 3.14159265359;
-					r=curand(&state[id])%1000;
-					float phi = acos(2.0 * (r/1000.f) - 1.0) - (3.14159265359/2);
+					r = pseudoRandom(id * t * 4);
+					float theta = r * 2.0 * 3.14159265359;
+					r = pseudoRandom(id * t * 5);
+					float phi = acos(2.0 * r - 1.0) - (3.14159265359/2);
 					float sinTheta = sin(theta);
 					float cosTheta = cos(theta);
 					float sinPhi = sin(phi);
@@ -204,20 +204,20 @@ __global__ void kernelParticle(float *x, float *y, float *z,
 			
 
 				//Then calculate de init velocity
-				r=curand(&state[id])%1000;
-				vx[id] = d_initVelocity[0] + d_rInitVelocity[0]*2.f*((r/1000.f)-0.5f);
+				r = pseudoRandom(id * t * 6);
+				vx[id] = d_initVelocity[0] + d_rInitVelocity[0]*2.f*(r-0.5f);
 
-				r=curand(&state[id])%1000;
-				vy[id] = d_initVelocity[1] + d_rInitVelocity[1]*2.f*((r/1000.f)-0.5f);
+				r = pseudoRandom(id * t * 7);
+				vy[id] = d_initVelocity[1] + d_rInitVelocity[1]*2.f*(r-0.5f);
 
-				r=curand(&state[id])%1000;
-				vz[id] = d_initVelocity[2] + d_rInitVelocity[2]*2.f*((r/1000.f)-0.5f);
+				r = pseudoRandom(id * t * 8);
+				vz[id] = d_initVelocity[2] + d_rInitVelocity[2]*2.f*(r-0.5f);
 
 
 				//And last, calculate the life
-				r=curand(&state[id])%1000;
+				r = pseudoRandom(id * t * 9);
 				lt[id] = 0.f;
-				lr[id] = d_life[0] + d_rLife[0]*(0.5*(r/1000.f));
+				lr[id] = d_life[0] + d_rLife[0]*(0.5*r);
 			}
 		}else
 		{
@@ -237,9 +237,9 @@ __global__ void kernelParticle(float *x, float *y, float *z,
 			{
 				float3 pos = make_float3(x[id], y[id], z[id]);
 				float time = t*d_timeEv[0];
-				float pbx = d_1Amp[0]*repeaterPerlin(pos, time, d_1Size[0], 2989,   d_1n[0], d_1lacunarity[0], d_1decay[0]);
-				float pby = d_1Amp[1]*repeaterPerlin(pos, time, d_1Size[0], 841126, d_1n[0], d_1lacunarity[0], d_1decay[0]);
-				float pbz = d_1Amp[2]*repeaterPerlin(pos, time, d_1Size[0], 189277, d_1n[0], d_1lacunarity[0], d_1decay[0]);
+				float pbx = d_1Amp[0]*repeaterPerlin(pos, time, d_1Size[0], 27989,   d_1n[0], d_1lacunarity[0], d_1decay[0]);
+				float pby = d_1Amp[1]*repeaterPerlin(pos, time, d_1Size[0], 8461126, d_1n[0], d_1lacunarity[0], d_1decay[0]);
+				float pbz = d_1Amp[2]*repeaterPerlin(pos, time, d_1Size[0], 1892777, d_1n[0], d_1lacunarity[0], d_1decay[0]);
 
 				vx[id] = vx[id] + pbx;
 				vy[id] = vy[id] + pby;
