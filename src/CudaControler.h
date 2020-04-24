@@ -48,7 +48,7 @@ class CudaControler
         /*
         Device Buffers
         */
-        void* devStates;//random state
+        //void* devStates;//random state
 
         float *d_x;	    //position x
 	    float *d_y;	    //position y

@@ -139,18 +139,19 @@ __constant__ float d_2Size[1], d_2lacunarity[1], d_2decay[1], d_2Amp[3];
 /*===================    CUDA Kernels    ========================*/
 /*===============================================================*/
 
+/*
 __global__ void setupRandomParticle( curandState * state, unsigned long seed)
 {
 	int idx = blockIdx.x * blockDim.x + threadIdx.x;
 	if(idx<d_maxParticles[0])
     curand_init ( seed, idx, 0, &state[idx] );
 } 
-
+*/
 
 __global__ void kernelParticle(float *x, float *y, float *z,
 							float *vx, float *vy, float *vz,
 							float *lt, float *lr,
-							curandState* state, unsigned int seed,
+							/*curandState* state, unsigned int seed,*/
 							double dt, double t)
 {
 
@@ -331,10 +332,10 @@ void CudaControler::start()
 	//Allocate memory for resource vector in host
 	h_resource = (float*)malloc(bytes);
 
-	cudaMalloc ( &devStates, e_MaxParticles*sizeof( curandState ) );
-	int particles_blockSize = cu_BlockSize;
-	int particles_gridSize = (int)ceil((float)e_MaxParticles/particles_blockSize);
-	setupRandomParticle<<<particles_gridSize, particles_blockSize>>> ( (curandState*)devStates, rand()%10000);
+	//cudaMalloc ( &devStates, e_MaxParticles*sizeof( curandState ) );
+	//int particles_blockSize = cu_BlockSize;
+	//int particles_gridSize = (int)ceil((float)e_MaxParticles/particles_blockSize);
+	//setupRandomParticle<<<particles_gridSize, particles_blockSize>>> ( (curandState*)devStates, rand()%10000);
 }
 
 
@@ -342,7 +343,7 @@ void CudaControler::close()
 {
 	// Release host memory
 	free(h_resource);
-	cudaFree(devStates);
+	//cudaFree(devStates);
 }
 
 
@@ -355,8 +356,8 @@ void CudaControler::step(double dt)
 		copyConstants();
 
 	//Maping the OpenGL buffers for CUDA
-	if(r_enable)
-		mapResources();
+	//if(r_enable)
+		//mapResources();
 
 	//Execute Kernel
 	// Number of threads in each block
@@ -369,11 +370,11 @@ void CudaControler::step(double dt)
 		//setupRandomParticle<<<particles_gridSize, particles_blockSize>>> ( (curandState*)devStates, rand()%10000);
 
 	//Kernel particle
-	kernelParticle<<<particles_gridSize, particles_blockSize>>>(d_x, d_y, d_z, d_vx, d_vy, d_vz, d_lt, d_lr, (curandState*)devStates, rand()%10000, dt, currentTime);
+	kernelParticle<<<particles_gridSize, particles_blockSize>>>(d_x, d_y, d_z, d_vx, d_vy, d_vz, d_lt, d_lr, /*(curandState*)devStates, rand()%10000,*/ dt, currentTime);
 	
 	//Reset the buffers
-	if(r_enable)
-		unmapResources();
+	//if(r_enable)
+		//unmapResources();
 }
 
 
