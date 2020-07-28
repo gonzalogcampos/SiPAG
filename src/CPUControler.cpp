@@ -5,6 +5,7 @@
 #include <Values.h>
 #include <Windows.h>
 #include <CudaControler.h>
+#include <NoiseFunc.h>
 #include <Render.h>
 
 void CPUControler::impData()
