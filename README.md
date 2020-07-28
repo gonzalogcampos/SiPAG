@@ -14,3 +14,4 @@ GPU calculed particle system &amp; OpenGL Render
 * [SiPAG v1.8.3 (Map & Rand modification)](https://github.com/gogarcia/SiPAG/raw/master/releases/SiPAG_v1.8.3_Map&RandModif.zip)
 * [SiPAG v1.8.4 (Hash instead of curand)](https://github.com/gogarcia/SiPAG/raw/master/releases/SiPAG_v1.8.4_HashInsteadOfCURand.zip)
 * [SiPAG v1.8.5](https://github.com/gogarcia/SiPAG/raw/master/releases/SiPAG_v1.8.5.zip)
+* [SiPAG v1.9.0](https://github.com/gogarcia/SiPAG/raw/master/releases/SiPAG_v1.9.0.zip)

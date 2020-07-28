@@ -46,7 +46,7 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 int start(int argv, char **argc)
 {
     cPrint("Start\n", 3);
-    cPrint("SiPAG | Cuda & OpenGL Particle simulatior\nBuild: v1.8.4 2020\nMIT License Copyright (c) Gonzalo G. Campos 2020\n",1);
+    cPrint("SiPAG | Cuda & OpenGL Particle simulatior\nBuild: v1.9.0 2020\nMIT License Copyright (c) Gonzalo G. Campos 2020\n",1);
 
 
     cudaControler   = CudaControler::getInstance();
