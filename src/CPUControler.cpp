@@ -109,6 +109,35 @@ void CPUControler::step(double dt)
             vy[i] = vy[i] + w_Constant[1];
             vz[i] = vz[i] + w_Constant[2];
 
+            
+			//Wind perlin Big
+			if(w_1)
+			{
+				floatv pos = floatv(x[i], y[i], z[i]);
+				float time = dt*timeEv;
+				float pbx = w_1Amp[0]*_repeaterPerlin(pos, time, w_1Size, 27989,   w_1n, w_1lacunarity, w_1decay);
+				float pby = w_1Amp[1]*_repeaterPerlin(pos, time, w_1Size, 8461126, w_1n, w_1lacunarity, w_1decay);
+				float pbz = w_1Amp[2]*_repeaterPerlin(pos, time, w_1Size, 1892777, w_1n, w_1lacunarity, w_1decay);
+
+				vx[i] = vx[i] + pbx;
+				vy[i] = vy[i] + pby;
+				vz[i] = vz[i] + pbz;
+			}
+			
+			if(w_2)
+			{
+				floatv pos = floatv(x[i], y[i], z[i]);
+				float time = dt*timeEv;
+				float pbx = w_2Amp[0]*_repeaterPerlin(pos, time, w_2Size, 2989,   w_2n, w_2lacunarity, w_2decay);
+				float pby = w_2Amp[1]*_repeaterPerlin(pos, time, w_2Size, 841126, w_2n, w_2lacunarity, w_2decay);
+				float pbz = w_2Amp[2]*_repeaterPerlin(pos, time, w_2Size, 189277, w_2n, w_2lacunarity, w_2decay);
+
+				vx[i] = vx[i] + pbx;
+				vy[i] = vy[i] + pby;
+				vz[i] = vz[i] + pbz;
+			}
+
+
             //Position addition
             x[i] += vx[i]*dt;
             y[i] += vy[i]*dt;

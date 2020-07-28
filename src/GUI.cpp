@@ -224,8 +224,8 @@ void gui_Wind()
     ImGui::Text("Wind");
     ImGui::SliderFloat3("Constant Wind",w_Constant, -1.f, 1.f);
 
-    if(GPU_Computing)
-    {
+    //if(GPU_Computing)
+    //{
         ImGui::SliderFloat("Wind motion", &timeEv, 0.f, 10.f);
         ImGui::Checkbox("Wind noise 1", &w_1);
         if(w_1)
@@ -246,10 +246,10 @@ void gui_Wind()
             ImGui::SliderFloat("2 Decay", &w_2decay, 0.f, 1.f);
             ImGui::SliderInt("2 Octaves", &w_2n, 0.f, 10.f);
         }
-    }else
-    {
-        ImGui::Text("Wind noise is not available in CPU");
-    }
+    //}else
+    //{
+    //    ImGui::Text("Wind noise is not available in CPU");
+    //}
     
 
     
